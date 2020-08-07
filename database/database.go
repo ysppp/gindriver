@@ -10,8 +10,7 @@ import (
 
 var Database *gorm.DB
 
-func init() {
-	var err error
+func InitDatabase() (err error) {
 	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?%s",
 		config.Config.DB.User,
 		config.Config.DB.Pass,
@@ -22,7 +21,5 @@ func init() {
 	fmt.Printf("DSN: %s", dsn)
 	Database, err = gorm.Open("mysql", dsn)
 
-	if err != nil {
-		fmt.Printf("err: %s", err)
-	}
+	return err
 }

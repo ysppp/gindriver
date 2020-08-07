@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gindriver/config"
+	"gindriver/database"
 	"gindriver/router"
 	"github.com/jinzhu/configor"
 )
@@ -10,6 +11,11 @@ import (
 func main() {
 	var err error
 	err = configor.Load(&config.Config, "config/config.yml")
+	if err != nil {
+		fmt.Printf("err: %s", err)
+	}
+
+	err = database.InitDatabase()
 	if err != nil {
 		fmt.Printf("err: %s", err)
 	}
