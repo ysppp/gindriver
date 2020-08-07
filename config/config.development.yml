@@ -1,0 +1,11 @@
+appname: gindriver
+
+db:
+  name: test
+  user: test
+  pass: test
+  host: "127.0.0.1"
+  port: 3306
+  param: "charset=utf8&loc=Local"
+
+listenaddr: "127.0.0.1:60082"
