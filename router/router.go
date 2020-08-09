@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"gindriver/api"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -9,8 +10,14 @@ import (
 func InitRouter() *gin.Engine {
 	app := gin.Default()
 
+	// Static file handler
 	app.Static("/", "public")
+
+	// API router
 	app.POST("/upload", UploadHandler)
+	app.POST("/api/register/begin", api.BeginRegistration)
+
+	// 404 Handler
 	app.NoRoute(NoRouterHandler)
 
 	return app

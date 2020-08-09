@@ -1,4 +1,4 @@
-package database
+package utils
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ func InitDatabase() (err error) {
 		strconv.Itoa(int(config.Config.DB.Port)),
 		config.Config.DB.Name,
 		config.Config.DB.Param)
-	fmt.Printf("DSN: %s", dsn)
+	fmt.Printf("DSN: %s\n", dsn)
 	Database, err = gorm.Open("mysql", dsn)
 
 	return err
