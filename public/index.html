@@ -108,7 +108,7 @@ Username:
         }
 
         $.get(
-            '/api/login/begin/' + username,
+            '/api/login/' + username + '/begin',
             null,
             function (data) {
                 return data
@@ -133,9 +133,10 @@ Username:
                 let sig = assertion.response.signature;
                 let userHandle = assertion.response.userHandle;
 
-                $.post(
-                    '/api/login/finish/' + username,
-                    JSON.stringify({
+                $.ajax({
+                    url: '/api/login/' + username + "/finish",
+                    type: 'PATCH',
+                    data: JSON.stringify({
                         id: assertion.id,
                         rawId: bufferEncode(rawId),
                         type: assertion.type,
@@ -146,14 +147,10 @@ Username:
                             userHandle: bufferEncode(userHandle),
                         },
                     }),
-                    function (data) {
-                        return data
-                    },
-                    'json')
+                })
             })
             .then((success) => {
                 alert("successfully logged in " + username + "!")
-                return
             })
             .catch((error) => {
                 console.log(error)

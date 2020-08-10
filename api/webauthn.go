@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gindriver/models"
 	"gindriver/utils"
+	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -26,7 +27,7 @@ func BeginRegistration(c *gin.Context) {
 		return
 	}
 
-	ret, err := models.GetUserByName(username)
+	ret, err := models.GetValidUserByName(username)
 	if err != nil && err.Error() != "record not found" {
 		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
 		return
@@ -59,6 +60,11 @@ func BeginRegistration(c *gin.Context) {
 
 func FinishRegistration(c *gin.Context) {
 	username := c.Param("name")
+	if !utils.FilterUsername(username) {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad username")))
+		return
+	}
+
 	user, err := models.GetUserByName(username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
@@ -82,6 +88,7 @@ func FinishRegistration(c *gin.Context) {
 		return
 	}
 
+	user.Valid = true
 	user.CredentialId = utils.Btoa(credential.ID)
 	user.CredentialAttestationType = credential.AttestationType
 	user.AuthenticatorAAGUID = utils.Btoa(credential.Authenticator.AAGUID)
@@ -95,4 +102,85 @@ func FinishRegistration(c *gin.Context) {
 
 	utils.Database.Save(&user)
 	c.JSON(http.StatusOK, utils.SuccessWrapper("Registration Success"))
+}
+
+func BeginLogin(c *gin.Context) {
+	username := c.Param("name")
+	if !utils.FilterUsername(username) {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad username")))
+		return
+	}
+
+	user, err := models.GetValidUserByName(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+	if user.Name == "" {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("user not exist")))
+		return
+	}
+
+	options, sessionData, err := utils.WebAuthn.BeginLogin(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	if err = utils.WebAuthnSessionStore.
+		SaveWebauthnSession("auth", sessionData, c.Request, c.Writer); err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, options)
+}
+
+func FinishLogin(c *gin.Context) {
+	username := c.Param("name")
+	if !utils.FilterUsername(username) {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad username")))
+		return
+	}
+
+	user, err := models.GetValidUserByName(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+	if user.Name == "" {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("user not exist")))
+		return
+	}
+
+	sessionData, err := utils.WebAuthnSessionStore.GetWebauthnSession("auth", c.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	cred := webauthn.Credential{
+		ID:              utils.Atob(user.CredentialId),
+		PublicKey:       utils.ReadFile(fmt.Sprintf("./public/pubkeys/%s.pub", username)),
+		AttestationType: user.CredentialAttestationType,
+		Authenticator: webauthn.Authenticator{
+			AAGUID:    utils.Atob(user.AuthenticatorAAGUID),
+			SignCount: user.AuthenticatorSignCount,
+		},
+	}
+
+	queryUser := &models.User{
+		Id:          user.Id,
+		Name:        user.Name,
+		DisplayName: user.DisplayName,
+	}
+	queryUser.AddCredential(cred)
+
+	_, err = utils.WebAuthn.FinishLogin(queryUser, sessionData, c.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.SuccessWrapper("Login success!"))
 }

@@ -10,6 +10,7 @@ import (
 
 type User struct {
 	Id          uint64 `gorm:"type:bigint(64) unsigned;primary_key"`
+	Valid       bool   `gorm:"type:bool"`
 	Name        string `gorm:"type:varchar(32)"`
 	DisplayName string `gorm:"type:varchar(32)"`
 
@@ -23,6 +24,7 @@ type User struct {
 func NewUser(name string, displayName string) *User {
 	user := &User{}
 	user.Id = randomUint64()
+	user.Valid = false
 	user.Name = name
 	user.DisplayName = displayName
 	// user.credentials = []webauthn.Credential{}
@@ -100,6 +102,15 @@ func (u User) Insert() (user *User, err error) {
 func GetUserByName(username string) (u User, err error) {
 	if err = utils.Database.
 		Where("name = ?", username).
+		First(&u).Error; err != nil {
+		return
+	}
+	return
+}
+
+func GetValidUserByName(username string) (u User, err error) {
+	if err = utils.Database.
+		Where("name = ? and valid = 1", username).
 		First(&u).Error; err != nil {
 		return
 	}

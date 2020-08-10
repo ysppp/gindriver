@@ -15,3 +15,10 @@ func FilterUsername(str string) bool {
 func SaveFile(filename string, i []byte) error {
 	return ioutil.WriteFile(filename, i, 0644)
 }
+
+func ReadFile(filename string) []byte {
+	if c, err := ioutil.ReadFile(filename); err == nil {
+		return c
+	}
+	return nil
+}

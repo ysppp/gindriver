@@ -11,12 +11,15 @@ func InitRouter() *gin.Engine {
 	app := gin.Default()
 
 	// Static file handler
-	app.Static("/", "public")
+	app.StaticFile("/", "public/index.html")
+	app.Static("/pubkey/", "public/pubkeys")
 
 	// API router
-	app.POST("/upload", UploadHandler)
+	app.POST("/api/upload", UploadHandler)
 	app.POST("/api/register/begin", api.BeginRegistration)
 	app.PATCH("/api/register/:name/finish", api.FinishRegistration)
+	app.GET("/api/login/:name/begin", api.BeginLogin)
+	app.PATCH("/api/login/:name/finish", api.FinishLogin)
 
 	// 404 Handler
 	app.NoRoute(NoRouterHandler)
