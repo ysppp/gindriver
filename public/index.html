@@ -77,7 +77,7 @@ Username:
                 let rawId = credential.rawId;
 
                 $.ajax({
-                    url: '/api/register/finish/' + username,
+                    url: '/api/register/' + username + '/finish',
                     type: 'PATCH',
                     data: JSON.stringify({
                         id: credential.id,

@@ -14,6 +14,7 @@ var (
 func InitWebAuthn() (err error) {
 	WebAuthn, err = webauthn.New(&webauthn.Config{
 		RPID:          config.Config.RPID,
+		RPOrigin:      config.Config.RPOrigin,
 		RPDisplayName: config.Config.RPDisplayName,
 	})
 	WebAuthnSessionStore, err = session.NewStore()

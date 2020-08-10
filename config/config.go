@@ -14,5 +14,6 @@ var Config = struct {
 
 	ListenAddr    string
 	RPID          string
+	RPOrigin      string
 	RPDisplayName string
 }{}
