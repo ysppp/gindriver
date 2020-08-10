@@ -12,5 +12,7 @@ var Config = struct {
 		Param string
 	}
 
-	ListenAddr string
+	ListenAddr    string
+	RPID          string
+	RPDisplayName string
 }{}

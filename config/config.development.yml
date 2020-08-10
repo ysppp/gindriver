@@ -9,3 +9,5 @@ db:
   param: "charset=utf8&loc=Local"
 
 listenaddr: "127.0.0.1:60082"
+rpid: "gindriver.evi0s.com"
+rpdisplayname: "GinDriver"
