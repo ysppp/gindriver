@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gindriver/models"
 	"gindriver/utils"
-	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -121,7 +120,9 @@ func BeginLogin(c *gin.Context) {
 		return
 	}
 
-	options, sessionData, err := utils.WebAuthn.BeginLogin(user)
+	queryUser := user.ConstructWebAuthNUser()
+
+	options, sessionData, err := utils.WebAuthn.BeginLogin(queryUser)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
 		return
@@ -159,22 +160,7 @@ func FinishLogin(c *gin.Context) {
 		return
 	}
 
-	cred := webauthn.Credential{
-		ID:              utils.Atob(user.CredentialId),
-		PublicKey:       utils.ReadFile(fmt.Sprintf("./public/pubkeys/%s.pub", username)),
-		AttestationType: user.CredentialAttestationType,
-		Authenticator: webauthn.Authenticator{
-			AAGUID:    utils.Atob(user.AuthenticatorAAGUID),
-			SignCount: user.AuthenticatorSignCount,
-		},
-	}
-
-	queryUser := &models.User{
-		Id:          user.Id,
-		Name:        user.Name,
-		DisplayName: user.DisplayName,
-	}
-	queryUser.AddCredential(cred)
+	queryUser := user.ConstructWebAuthNUser()
 
 	_, err = utils.WebAuthn.FinishLogin(queryUser, sessionData, c.Request)
 	if err != nil {

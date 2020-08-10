@@ -3,6 +3,7 @@ package models
 import (
 	"crypto/rand"
 	"encoding/binary"
+	"fmt"
 	"gindriver/utils"
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
@@ -84,6 +85,26 @@ func (u User) CredentialExcludeList() []protocol.CredentialDescriptor {
 	}
 
 	return credentialExcludeList
+}
+
+func (u User) ConstructWebAuthNUser() *User {
+	cred := webauthn.Credential{
+		ID:              utils.Atob(u.CredentialId),
+		PublicKey:       utils.ReadFile(fmt.Sprintf("./public/pubkeys/%s.pub", u.Name)),
+		AttestationType: u.CredentialAttestationType,
+		Authenticator: webauthn.Authenticator{
+			AAGUID:    utils.Atob(u.AuthenticatorAAGUID),
+			SignCount: u.AuthenticatorSignCount,
+		},
+	}
+
+	queryUser := &User{
+		Id:          u.Id,
+		Name:        u.Name,
+		DisplayName: u.DisplayName,
+	}
+	queryUser.AddCredential(cred)
+	return queryUser
 }
 
 func (u User) Insert() (user *User, err error) {
