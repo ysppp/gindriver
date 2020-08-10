@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	Id          uint64                `gorm:"type:bigint(64);primary_key"`
+	Id          uint64                `gorm:"type:bigint(64) unsigned;primary_key"`
 	Name        string                `gorm:"type:varchar(100)"`
 	DisplayName string                `gorm:"type:varchar(100)"`
 	PublicKey   string                `gorm:"type:varchar(100)"`
