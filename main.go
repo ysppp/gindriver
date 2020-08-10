@@ -38,6 +38,7 @@ func main() {
 
 	fmt.Printf("%s: running on addr: %s\n", config.Config.AppName, config.Config.ListenAddr)
 	app := router.InitRouter()
+
 	err = app.Run(config.Config.ListenAddr)
 	if err != nil {
 		fmt.Printf("err: %s\n", err)

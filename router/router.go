@@ -16,6 +16,7 @@ func InitRouter() *gin.Engine {
 	// API router
 	app.POST("/upload", UploadHandler)
 	app.POST("/api/register/begin", api.BeginRegistration)
+	app.PATCH("/api/register/:name/finish", api.FinishRegistration)
 
 	// 404 Handler
 	app.NoRoute(NoRouterHandler)

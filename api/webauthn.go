@@ -9,9 +9,18 @@ import (
 )
 
 func BeginRegistration(c *gin.Context) {
-	username := c.PostForm("username")
-	var err error
+	var (
+		beginRegRequest models.BeginRegRequest
+		err             error
+	)
 
+	err = c.BindJSON(&beginRegRequest)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad json body")))
+		return
+	}
+
+	username := beginRegRequest.Username
 	if !utils.FilterUsername(username) {
 		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad username")))
 		return
@@ -34,12 +43,56 @@ func BeginRegistration(c *gin.Context) {
 	}
 
 	options, sessionData, err := utils.WebAuthn.BeginRegistration(newUser)
-
-	fmt.Printf("Session data: %s", sessionData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, options)
+	err = utils.WebAuthnSessionStore.SaveWebauthnSession("reg", sessionData, c.Request, c.Writer)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	c.JSON(http.StatusCreated, options)
+}
+
+func FinishRegistration(c *gin.Context) {
+	username := c.Param("name")
+	user, err := models.GetUserByName(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	if user.Name == "" {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("user not exist")))
+		return
+	}
+
+	sessionData, err := utils.WebAuthnSessionStore.GetWebauthnSession("reg", c.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	credential, err := utils.WebAuthn.FinishRegistration(user, sessionData, c.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	user.CredentialId = utils.Btoa(credential.ID)
+	user.CredentialAttestationType = credential.AttestationType
+	user.AuthenticatorAAGUID = utils.Btoa(credential.Authenticator.AAGUID)
+	user.AuthenticatorSignCount = credential.Authenticator.SignCount
+
+	err = utils.SaveFile(fmt.Sprintf("./public/pubkeys/%s.pub", username), credential.PublicKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	utils.Database.Save(&user)
+	c.JSON(http.StatusOK, utils.SuccessWrapper("Registration Success"))
 }

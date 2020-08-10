@@ -9,11 +9,15 @@ import (
 )
 
 type User struct {
-	Id          uint64                `gorm:"type:bigint(64) unsigned;primary_key"`
-	Name        string                `gorm:"type:varchar(100)"`
-	DisplayName string                `gorm:"type:varchar(100)"`
-	PublicKey   string                `gorm:"type:varchar(100)"`
-	credentials []webauthn.Credential `gorm:"-"`
+	Id          uint64 `gorm:"type:bigint(64) unsigned;primary_key"`
+	Name        string `gorm:"type:varchar(32)"`
+	DisplayName string `gorm:"type:varchar(32)"`
+
+	CredentialId              string `gorm:"type:varchar(1024)"`
+	CredentialAttestationType string `gorm:"type:varchar(1024)"`
+	AuthenticatorAAGUID       string `gorm:"type:varchar(1024)"`
+	AuthenticatorSignCount    uint32 `gorm:"type:int(64) unsigned"`
+	credentials               []webauthn.Credential
 }
 
 func NewUser(name string, displayName string) *User {

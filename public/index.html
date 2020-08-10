@@ -49,9 +49,9 @@ Username:
 
         $.post(
             '/api/register/begin',
-            {
+            JSON.stringify({
                 username: username
-            },
+            }),
             function (data) {
                 return data
             },
@@ -76,9 +76,10 @@ Username:
                 let clientDataJSON = credential.response.clientDataJSON;
                 let rawId = credential.rawId;
 
-                $.post(
-                    '/api/register/finish/' + username,
-                    JSON.stringify({
+                $.ajax({
+                    url: '/api/register/finish/' + username,
+                    type: 'PATCH',
+                    data: JSON.stringify({
                         id: credential.id,
                         rawId: bufferEncode(rawId),
                         type: credential.type,
@@ -86,15 +87,11 @@ Username:
                             attestationObject: bufferEncode(attestationObject),
                             clientDataJSON: bufferEncode(clientDataJSON),
                         },
-                    }),
-                    function (data) {
-                        return data
-                    },
-                    'json')
+                    })
+                })
             })
             .then((success) => {
                 alert("successfully registered " + username + "!")
-                return
             })
             .catch((error) => {
                 console.log(error)

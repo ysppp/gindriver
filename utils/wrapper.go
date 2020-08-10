@@ -10,3 +10,9 @@ func ErrorWrapper(err error) gin.H {
 		"error": fmt.Sprint(err),
 	}
 }
+
+func SuccessWrapper(str string) gin.H {
+	return gin.H{
+		"success": str,
+	}
+}
