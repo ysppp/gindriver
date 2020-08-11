@@ -168,5 +168,14 @@ func FinishLogin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.SuccessWrapper("Login success!"))
+	jwtToken, err := models.GenerateJWTToken(user.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Login success",
+		"token":   jwtToken,
+	})
 }

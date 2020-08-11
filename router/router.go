@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"gindriver/api"
+	"gindriver/middleware"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,11 +16,18 @@ func InitRouter() *gin.Engine {
 	app.Static("/pubkey/", "public/pubkeys")
 
 	// API router
-	app.POST("/api/upload", UploadHandler)
-	app.POST("/api/register/begin", api.BeginRegistration)
-	app.PATCH("/api/register/:name/finish", api.FinishRegistration)
-	app.GET("/api/login/:name/begin", api.BeginLogin)
-	app.PATCH("/api/login/:name/finish", api.FinishLogin)
+	apiRouter := app.Group("/api/auth/")
+	apiRouter.POST("/register/begin", api.BeginRegistration)
+	apiRouter.PATCH("/register/:name/finish", api.FinishRegistration)
+	apiRouter.GET("/login/:name/begin", api.BeginLogin)
+	apiRouter.PATCH("/login/:name/finish", api.FinishLogin)
+
+	// Auth required router
+	apiAuthRequiredRouter := app.Group("/api/user/")
+	apiAuthRequiredRouter.Use(middleware.LoginRequired())
+	{
+		apiAuthRequiredRouter.GET("/info", api.UserInfo)
+	}
 
 	// 404 Handler
 	app.NoRoute(NoRouterHandler)

@@ -13,3 +13,11 @@ func Atob(i string) (o []byte) {
 	}
 	return
 }
+
+func AtobURLSafe(i string) (o []byte) {
+	o, err := base64.RawURLEncoding.DecodeString(i)
+	if err != nil {
+		return nil
+	}
+	return
+}
