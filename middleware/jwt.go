@@ -18,18 +18,21 @@ func LoginRequired() gin.HandlerFunc {
 		tmp := strings.Split(authHeader, " ")
 		if len(tmp) != 2 {
 			c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad authentication token")))
+			c.Abort()
 			return
 		}
 		jwtToken := tmp[1]
 		payload := strings.Split(jwtToken, ".")
 		if len(payload) != 3 {
 			c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad authentication token")))
+			c.Abort()
 			return
 		}
 		jsonPayload := &models.JWTClaims{}
 		err := json.Unmarshal(utils.AtobURLSafe(payload[1]), &jsonPayload)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad authentication token")))
+			c.Abort()
 			return
 		}
 
@@ -39,13 +42,16 @@ func LoginRequired() gin.HandlerFunc {
 			})
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("bad credential")))
+			c.Abort()
 			return
 		}
 
 		if _, err := token.Claims.(*models.JWTClaims); err && token.Valid {
+			c.Set("SessionUser", jsonPayload.Name)
 			c.Next()
 		} else {
 			c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("bad credential")))
+			c.Abort()
 			return
 		}
 	}

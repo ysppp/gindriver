@@ -7,12 +7,14 @@ import (
 
 func ErrorWrapper(err error) gin.H {
 	return gin.H{
-		"error": fmt.Sprint(err),
+		"status":  "error",
+		"message": fmt.Sprint(err),
 	}
 }
 
 func SuccessWrapper(str string) gin.H {
 	return gin.H{
-		"success": str,
+		"status":  "success",
+		"message": str,
 	}
 }
