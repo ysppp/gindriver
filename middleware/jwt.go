@@ -14,6 +14,11 @@ import (
 func LoginRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("Authorization")
+		if len(authHeader) == 0 {
+			c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("unauthorized")))
+			c.Abort()
+			return
+		}
 
 		tmp := strings.Split(authHeader, " ")
 		if len(tmp) != 2 {
