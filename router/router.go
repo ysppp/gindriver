@@ -12,7 +12,11 @@ func InitRouter() *gin.Engine {
 	app := gin.Default()
 
 	// Static file handler
-	app.StaticFile("/", "public/index.html")
+	//app.StaticFile("/", "public/index.html")
+	// Dev frontend
+	app.StaticFile("/", "frontend/dist/index.html")
+	app.StaticFile("/umi.css", "frontend/dist/umi.css")
+	app.StaticFile("/umi.js", "frontend/dist/umi.js")
 	app.Static("/pubkey/", "public/pubkeys")
 
 	// API router

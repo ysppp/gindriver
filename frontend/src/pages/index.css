@@ -1,0 +1,22 @@
+
+.normal {
+  font-family: Georgia, sans-serif;
+  margin-top: 4em;
+}
+
+.content-style {
+  height: 90vh;
+  padding-top: 30px;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+}
+
+.inner-layout-style {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(5px);
+  padding-top: 30pt;
+  height: 100vh;
+}
+

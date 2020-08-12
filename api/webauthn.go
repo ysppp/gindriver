@@ -112,8 +112,11 @@ func BeginLogin(c *gin.Context) {
 
 	user, err := models.GetValidUserByName(username)
 	if err != nil {
+		if err.Error() == "record not found" {
+			c.JSON(http.StatusBadRequest, utils.ErrorWrapper(err))
+			return
+		}
 		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
-		return
 	}
 	if user.Name == "" {
 		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("user not exist")))
