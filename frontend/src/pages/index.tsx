@@ -23,7 +23,7 @@ class IndexForm extends React.Component {
 
   onLoginAction = () => {
     let username = this.getUsername();
-    if (username == null) {
+    if (username === null) {
       console.log("err!");
       return;
     }
@@ -33,7 +33,7 @@ class IndexForm extends React.Component {
 
   onRegAction = () => {
     let username = this.getUsername();
-    if (username == null) {
+    if (username === null) {
       console.log("err!");
       return;
     }
