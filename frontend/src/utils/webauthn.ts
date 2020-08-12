@@ -20,11 +20,11 @@ const webauthnLogin = async (username: string) => {
   loadingMessage("loginLoadingMsg");
   try {
     const beginResponse = await fetch(APIs.API_LOGIN_BEGIN.replace("{}", username));
-    if (beginResponse.status == 400) {
+    if (beginResponse.status === 400) {
       errorMessage("Bad username!");
       return;
     }
-    if (beginResponse.status == 500) {
+    if (beginResponse.status === 500) {
       errorMessage("Server error!");
       return;
     }
@@ -38,16 +38,20 @@ const webauthnLogin = async (username: string) => {
         'Content-Type': 'application/json'
       })
     });
-    if (finishResponse.status == 400) {
+    if (finishResponse.status === 400) {
       errorMessage("Bad credential!");
       return;
     }
-    if (finishResponse.status == 500) {
+    if (finishResponse.status === 500) {
       errorMessage("Server error!");
       return;
     }
     successMessage("loginLoadingMsg", "Login success!");
   } catch (e) {
+    if (e.message.contains("The operation either timed out or was not allowed.")) {
+      errorMessage("Operation timed out or Canceled by user");
+      return;
+    }
     errorMessage(e.message);
   }
 }
@@ -62,16 +66,21 @@ const webauthnReg = async (username: string) => {
         'Content-Type': 'application/json'
       })
     });
-    if (beginResponse.status == 400) {
+
+    const beginResponseBody = await beginResponse.json();
+    if (beginResponse.status === 400) {
+      if (beginResponseBody.message === "user exist") {
+        errorMessage("Username aleady existed!");
+        return;
+      }
       errorMessage("Bad username!");
       return;
     }
-    if (beginResponse.status == 500) {
+    if (beginResponse.status === 500) {
       errorMessage("Server error!");
       return;
     }
 
-    const beginResponseBody = await beginResponse.json();
     const finishRequestBody = await create(beginResponseBody);
     const finishResponse = await fetch(APIs.API_REGISTER_FINISH.replace("{}", username), {
       method: "PATCH",
@@ -80,16 +89,20 @@ const webauthnReg = async (username: string) => {
         'Content-Type': 'application/json'
       })
     });
-    if (finishResponse.status == 400) {
+    if (finishResponse.status === 400) {
       errorMessage("Bad credential!");
       return;
     }
-    if (finishResponse.status == 500) {
+    if (finishResponse.status === 500) {
       errorMessage("Server error!");
       return;
     }
     successMessage("regLoadingMsg", "Registration success!");
   } catch (e) {
+    if (e.message.contains("The operation either timed out or was not allowed.")) {
+      errorMessage("Operation timed out or Canceled by user");
+      return;
+    }
     errorMessage(e.message);
   }
 }
