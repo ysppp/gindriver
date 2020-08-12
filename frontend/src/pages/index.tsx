@@ -4,7 +4,7 @@ import style from './index.css';
 import {Button, Card, Form, Input} from 'antd';
 import {FormInstance} from 'antd/lib/form';
 import {UserOutlined} from '@ant-design/icons';
-import {webauthnLogin} from '../utils/webauthn';
+import {webauthnLogin, webauthnReg} from '../utils/webauthn';
 
 
 class IndexForm extends React.Component {
@@ -38,6 +38,7 @@ class IndexForm extends React.Component {
       return;
     }
     console.log(username);
+    webauthnReg(username);
   }
 
   render() {

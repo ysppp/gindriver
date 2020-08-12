@@ -52,6 +52,49 @@ const webauthnLogin = async (username: string) => {
   }
 }
 
+const webauthnReg = async (username: string) => {
+  loadingMessage("regLoadingMsg");
+  try {
+    const beginResponse = await fetch(APIs.API_REGISTER_BEGIN, {
+      method: "POST",
+      body: JSON.stringify({username: username}),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    });
+    if (beginResponse.status == 400) {
+      errorMessage("Bad username!");
+      return;
+    }
+    if (beginResponse.status == 500) {
+      errorMessage("Server error!");
+      return;
+    }
+
+    const beginResponseBody = await beginResponse.json();
+    const finishRequestBody = await create(beginResponseBody);
+    const finishResponse = await fetch(APIs.API_REGISTER_BEGIN.replace("{}", username), {
+      method: "PATCH",
+      body: JSON.stringify(finishRequestBody),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    });
+    if (finishResponse.status == 400) {
+      errorMessage("Bad credential!");
+      return;
+    }
+    if (finishResponse.status == 500) {
+      errorMessage("Server error!");
+      return;
+    }
+    successMessage("regLoadingMsg", "Registration success!");
+  } catch (e) {
+    errorMessage(e.message);
+  }
+}
+
 export {
-  webauthnLogin
+  webauthnLogin,
+  webauthnReg
 }
