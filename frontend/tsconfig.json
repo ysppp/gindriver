@@ -11,11 +11,16 @@
     "strict": true,
     "paths": {
       "@/*": ["src/*"],
+      "@@/*": ["src/pages/.umi/*"],
       "@tmp/*": ["src/pages/.umi/*"]
     },
-    "allowSyntheticDefaultImports": true,
-    "types": [
-      "@types/webappsec-credential-management"
-    ]
-  }
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "mock/**/*",
+    "src/**/*",
+    "config/**/*",
+    ".umirc.ts",
+    "typings.d.ts"
+  ]
 }
