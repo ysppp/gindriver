@@ -48,7 +48,7 @@ const webauthnLogin = async (username: string) => {
     }
     successMessage("loginLoadingMsg", "Login success!");
   } catch (e) {
-    if (e.message.contains("The operation either timed out or was not allowed.")) {
+    if (e.message.indexOf("The operation either timed out or was not allowed.") > -1) {
       errorMessage("Operation timed out or Canceled by user");
       return;
     }
@@ -99,7 +99,7 @@ const webauthnReg = async (username: string) => {
     }
     successMessage("regLoadingMsg", "Registration success!");
   } catch (e) {
-    if (e.message.contains("The operation either timed out or was not allowed.")) {
+    if (e.message.indexOf("The operation either timed out or was not allowed.") > -1) {
       errorMessage("Operation timed out or Canceled by user");
       return;
     }
