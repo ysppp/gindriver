@@ -1,6 +1,8 @@
 import * as APIs from '../utils/apis';
 import { loadingMessage, errorMessage, successMessage } from '../components/message';
 import { create, get } from '@github/webauthn-json';
+// @ts-ignore
+import { history } from 'umi';
 
 // Base64 to ArrayBuffer
 function bufferDecode(value: string) {
@@ -38,6 +40,7 @@ const webauthnLogin = async (username: string) => {
         'Content-Type': 'application/json'
       })
     });
+    const finishResponseBody = await finishResponse.json();
     if (finishResponse.status === 400) {
       errorMessage("Bad credential!");
       return;
@@ -47,6 +50,11 @@ const webauthnLogin = async (username: string) => {
       return;
     }
     successMessage("loginLoadingMsg", "Login success!");
+
+    localStorage.setItem("jwt", finishResponseBody.token);
+    setTimeout(() => {
+      history.push("/user");
+    }, 2500);
   } catch (e) {
     if (e.message.indexOf("The operation either timed out or was not allowed.") > -1) {
       errorMessage("Operation timed out or Canceled by user");
