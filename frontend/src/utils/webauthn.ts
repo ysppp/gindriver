@@ -73,7 +73,7 @@ const webauthnReg = async (username: string) => {
 
     const beginResponseBody = await beginResponse.json();
     const finishRequestBody = await create(beginResponseBody);
-    const finishResponse = await fetch(APIs.API_REGISTER_BEGIN.replace("{}", username), {
+    const finishResponse = await fetch(APIs.API_REGISTER_FINISH.replace("{}", username), {
       method: "PATCH",
       body: JSON.stringify(finishRequestBody),
       headers: new Headers({
