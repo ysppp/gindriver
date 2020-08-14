@@ -4,11 +4,15 @@ import style from './index.css';
 import {Button, Card, Form, Input} from 'antd';
 import {FormInstance} from 'antd/lib/form';
 import {UserOutlined} from '@ant-design/icons';
-import {webauthnLogin, webauthnReg} from '../utils/webauthn';
+import {webauthnLogin, webauthnReg, browserSupport} from '../utils/webauthn';
 
 
 class IndexForm extends React.Component {
   formRef = React.createRef<FormInstance>();
+
+  onFocusCheck = () => {
+    browserSupport();
+  }
 
   getUsername = () => {
     if (this.formRef.current != null) {
@@ -60,7 +64,7 @@ class IndexForm extends React.Component {
               },
             ]}
           >
-            <Input prefix={<UserOutlined className="site-form-item-icon"/>} placeholder="Username"/>
+            <Input prefix={<UserOutlined className="site-form-item-icon"/>} placeholder="Username" onFocus={this.onFocusCheck}/>
           </Form.Item>
 
           <Form.Item>

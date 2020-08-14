@@ -1,8 +1,17 @@
 import * as APIs from '../utils/apis';
 import { loadingMessage, errorMessage, successMessage } from '../components/message';
-import { create, get } from '@github/webauthn-json';
+import { create, get, supported } from '@github/webauthn-json';
 import { history } from 'umi';
 
+// compatibility check
+const browserSupport = () => {
+  if (!supported()) {
+    errorMessage("This browser does not support WebAuthn!");
+    setTimeout(() => {
+      errorMessage("Please use compatible browers or operating system.");
+    }, 3000);
+  }
+}
 
 // Login
 const webauthnLogin = async (username: string) => {
@@ -104,5 +113,6 @@ const webauthnReg = async (username: string) => {
 
 export {
   webauthnLogin,
-  webauthnReg
+  webauthnReg,
+  browserSupport
 }
