@@ -8,7 +8,19 @@ const getUserInfo = async () => {
     return invalidSessionJumpBack();
   }
 
-  const userResponse = await fetch(API_USER_INFO.replace("{}", username));
+  const userCredential = localStorage.getItem("jwt");
+  if (userCredential === null) {
+    return invalidSessionJumpBack();
+  }
+
+  const userResponse = await fetch(API_USER_INFO.replace("{}", username),
+    {
+      method: "GET",
+      headers: new Headers({
+        "authorization": `Bearer ${userCredential}`
+      })
+    });
+
   if (userResponse.status === 401) {
     errorMessage("Unauthorized!");
     return setTimeout(() => {
