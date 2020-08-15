@@ -17,6 +17,11 @@ const browserSupport = () => {
 const webauthnLogin = async (username: string) => {
   loadingMessage("loginLoadingMsg");
   try {
+    if (!username.match(/^[a-zA-Z0-9]{4,16}$/)) {
+      errorMessage("Bad username: ^[a-zA-Z0-9]{4,16}$");
+      return;
+    }
+
     const beginResponse = await fetch(APIs.API_LOGIN_BEGIN.replace("{}", username));
     if (beginResponse.status === 400) {
       errorMessage("Bad username!");
@@ -48,6 +53,7 @@ const webauthnLogin = async (username: string) => {
     successMessage("loginLoadingMsg", "Login success!");
 
     localStorage.setItem("jwt", finishResponseBody.token);
+    localStorage.setItem("username", username);
     setTimeout(() => {
       history.push("/user");
     }, 2500);
@@ -63,6 +69,11 @@ const webauthnLogin = async (username: string) => {
 const webauthnReg = async (username: string) => {
   loadingMessage("regLoadingMsg");
   try {
+    if (!username.match(/^[a-zA-Z0-9]{4,16}$/)) {
+      errorMessage("Bad username: ^[a-zA-Z0-9]{4,16}$");
+      return;
+    }
+
     const beginResponse = await fetch(APIs.API_REGISTER_BEGIN, {
       method: "POST",
       body: JSON.stringify({username: username}),

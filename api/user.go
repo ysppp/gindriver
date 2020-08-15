@@ -13,5 +13,13 @@ func UserInfo(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("not authorized")))
 		return
 	}
-	c.JSON(http.StatusOK, utils.SuccessWrapper(fmt.Sprint(user)))
+	username := c.Param("name")
+	if user != username {
+		c.JSON(http.StatusForbidden, utils.ErrorWrapper(fmt.Errorf("access denied")))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":   "success",
+		"username": user,
+	})
 }

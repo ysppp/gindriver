@@ -17,7 +17,7 @@ func InitRouter() *gin.Engine {
 	app.StaticFile("/", "frontend/dist/index.html")
 	app.StaticFile("/umi.css", "frontend/dist/umi.css")
 	app.StaticFile("/umi.js", "frontend/dist/umi.js")
-	app.Static("/pubkey/", "public/pubkeys")
+	app.Static("/pubkeys/", "public/pubkeys")
 
 	// API router
 	apiRouter := app.Group("/api/auth/")
@@ -30,7 +30,7 @@ func InitRouter() *gin.Engine {
 	apiAuthRequiredRouter := app.Group("/api/user/")
 	apiAuthRequiredRouter.Use(middleware.LoginRequired())
 	{
-		apiAuthRequiredRouter.GET("/info", api.UserInfo)
+		apiAuthRequiredRouter.GET("/:name", api.UserInfo)
 	}
 
 	// 404 Handler

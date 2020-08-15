@@ -1,12 +1,72 @@
+import React, { useState }  from 'react';
+import {Card, Form, Input, Upload} from 'antd';
+import {InboxOutlined} from '@ant-design/icons';
+import {FormInstance} from 'antd/lib/form';
+import {getUserInfo, invalidSessionJumpBack} from '../utils/user';
 
-import React from 'react';
 
 import styles from './user.css';
 
-export default function() {
-  return (
-    <div className={styles.normal}>
-      <h1>Page user</h1>
-    </div>
-  );
+class UserForm extends React.Component {
+
+  constructor(props: Readonly<{}>) {
+    super(props);
+    this.state = {
+      user: "User",
+      uploadPerm: {disabled: true},
+      uploadHint: <p>You need to be <b>admin</b> to upload files</p>
+    };
+    this.onLoadUserFetch().then((username: string | null) => {
+      if (username === null) {
+        return invalidSessionJumpBack();
+      }
+      this.setState({user: `User: ${username}`});
+      if (username === "admin") {
+        this.setState({
+          uploadPerm: {disabled: false},
+          uploadHint: <p>Click or drag a file to this area to upload</p>
+        });
+      }
+    });
+  }
+
+  formRef = React.createRef<FormInstance>();
+
+  normFile = (e: { fileList: any; }) => {
+    console.log('Upload event:', e);
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e && e.fileList;
+  };
+
+  onLoadUserFetch = async () => {
+    const user = await getUserInfo();
+    if (user) {
+      return user;
+    }
+    return null;
+  }
+
+  render() {
+    return (
+      // @ts-ignore
+      <Card title={this.state.user} style={{
+        width: "300px",
+      }} onLoad={() => this.onLoadUserFetch()}>
+        <Form ref={this.formRef}>
+          <Form.Item name="dragger" valuePropName="fileList" getValueFromEvent={this.normFile} noStyle >
+            <Upload.Dragger name="files" action="/upload.do" {...this.state.uploadPerm}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined/>
+              </p>
+              <p className="ant-upload-text" style={{padding: "1px"}}>{this.state.uploadHint}</p>
+            </Upload.Dragger>
+          </Form.Item>
+        </Form>
+      </Card>
+    );
+  }
 }
+
+export default UserForm;

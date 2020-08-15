@@ -12,8 +12,8 @@ import (
 type User struct {
 	Id          uint64 `gorm:"type:bigint(64) unsigned;primary_key"`
 	Valid       bool   `gorm:"type:bool"`
-	Name        string `gorm:"type:varchar(32)"`
-	DisplayName string `gorm:"type:varchar(32)"`
+	Name        string `gorm:"type:varchar(16)"`
+	DisplayName string `gorm:"type:varchar(16)"`
 
 	CredentialId              string `gorm:"type:varchar(1024)"`
 	CredentialAttestationType string `gorm:"type:varchar(1024)"`

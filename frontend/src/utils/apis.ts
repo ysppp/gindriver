@@ -6,7 +6,7 @@ const API_REGISTER_BEGIN = "/api/auth/register/begin";
 const API_REGISTER_FINISH = "/api/auth/register/{}/finish";
 
 // User API group
-const API_USER_INFO = "/api/user/info";
+const API_USER_INFO = "/api/user/{}";
 
 export {
   API_LOGIN_BEGIN,
