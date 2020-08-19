@@ -22,7 +22,7 @@ func main() {
 				if err != nil {
 					fmt.Printf("err: %s\n", err)
 				}
-				if utils.Database != nil {
+				if utils.Database != nil && err == nil {
 					utils.Database.AutoMigrate(&models.User{})
 				}
 			}}).
@@ -37,7 +37,7 @@ func main() {
 	if err != nil {
 		fmt.Printf("err: %s\n", err)
 	}
-	if utils.Database != nil {
+	if utils.Database != nil && err == nil {
 		utils.Database.AutoMigrate(&models.User{})
 	}
 
