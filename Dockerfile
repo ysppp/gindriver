@@ -1,10 +1,11 @@
-FROM golang:1.14-alpine AS builder
+FROM golang:1.14-buster AS builder
 WORKDIR /go/src/gindriver/
 ADD . /go/src/gindriver
 
 # Builder
 RUN cd /go/src/gindriver && \
-    go build -o gindriver gindriver
+    CGO_ENABLED=0 go build -o gindriver \
+        -a -ldflags '-s -w' gindriver
 
 # Runner
 FROM debian:10
@@ -32,7 +33,7 @@ COPY public/* /backup/public/
 COPY entrypoint.sh /entrypoint.sh
 
 RUN chmod 0700 /backup && \
-    chmod +x /entrypoint.sh
+    chmod 0700 /entrypoint.sh
 
 EXPOSE 3000 22
 

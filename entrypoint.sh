@@ -31,6 +31,7 @@ echo "The End?" >> /flag
 SFLAGPATH="/etc/secret$(cat /dev/urandom | head -n 10 | md5sum | head -c 16)flag"
 echo $SFLAG > "$SFLAGPATH"
 
+
 # Init RP config
 if [ -z "$RPID" ]; then
     RPID="gindriver.evi0s.com"
@@ -64,7 +65,7 @@ fi
 
 # Create database users
 mysql -e "CREATE DATABASE ${DBNAME};"
-mysql -e "GRANT USAGE ON *.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASS}' WITH GRANT OPTION; GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON ${DBUSER}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASS}'; GRANT EXECUTE ON ${DBNAME}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASS}'; FLUSH PRIVILEGES;"
+mysql -e "GRANT USAGE ON *.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASS}' WITH GRANT OPTION; GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON ${DBNAME}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASS}'; GRANT EXECUTE ON ${DBNAME}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASS}'; FLUSH PRIVILEGES;"
 
 cat > /backup/config/config.yml << EOF
 appname: gindriver
@@ -84,18 +85,27 @@ rpdisplayname: "$RPNAME"
 
 EOF
 
+# Admin public key
+mkdir -p /backup/public/pubkeys
+echo "A_sup3r_Sup3r_S3cret_PUBBBBBBB_k3y?" > /backup/public/pubkeys/admin.pub
 
 while true; do
+    # Backup public keys
+    cp -r /var/www/public/pubkeys/* /backup/public/pubkeys/
+
     # Clean up
     rm -rf /var/www/*
 
     # Add hint
-    mkdir /var/www/.ssh
+    mkdir -p /var/www/.ssh
     echo "Interesting, right?" > /var/www/.ssh/authorized_keys
 
     # Copy to dist
-    cp -r /backup /var/www
-    chown -R www-data /var/www
+    cp -r /backup/* /var/www
+
+
+    # Fix ownership & permission
+    chown -R www-data.www-data /var/www/
     chmod -R 0755 /var/www
     chmod +x /var/www/gindriver
 
@@ -105,6 +115,10 @@ while true; do
     # Time interval
     sleep $RESTART
 
-    # Time to die
+    # Time to die!
     killall gindriver
+
+    # Take a breath
+    sleep 5
 done
+

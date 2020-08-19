@@ -1,3 +1,5 @@
 
 frontend
 .git
+public/pubkeys/*.pub
+
