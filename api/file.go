@@ -18,7 +18,7 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
-	file, err := c.FormFile("file")
+	file, err := c.FormFile("files")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(err))
 		return
