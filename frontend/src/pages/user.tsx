@@ -56,7 +56,7 @@ class UserForm extends React.Component {
       }} onLoad={() => this.onLoadUserFetch()}>
         <Form ref={this.formRef}>
           <Form.Item name="dragger" valuePropName="fileList" getValueFromEvent={this.normFile} noStyle >
-            <Upload.Dragger name="files" action="/upload.do" {...this.state.uploadPerm}>
+            <Upload.Dragger name="files" action="/api/user/file/upload" {...this.state.uploadPerm}>
               <p className="ant-upload-drag-icon">
                 <InboxOutlined/>
               </p>

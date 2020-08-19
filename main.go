@@ -15,7 +15,17 @@ func main() {
 	err = configor.
 		New(&configor.Config{
 			AutoReload:         true,
-			AutoReloadInterval: time.Minute}).
+			AutoReloadInterval: time.Minute,
+			AutoReloadCallback: func(config interface{}) {
+				fmt.Println("config reloaded")
+				err = utils.InitDatabase()
+				if err != nil {
+					fmt.Printf("err: %s\n", err)
+				}
+				if utils.Database != nil {
+					utils.Database.AutoMigrate(&models.User{})
+				}
+			}}).
 		Load(&config.Config, "config/config.yml")
 
 	if err != nil {

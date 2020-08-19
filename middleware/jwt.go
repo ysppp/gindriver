@@ -13,6 +13,11 @@ import (
 
 func LoginRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Testing admin token
+		// eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.
+		// eyJuYW1lIjoiYWRtaW4ifQ.
+		// nNvEZFA3VmUKjE8cSZIgXZj7ETRkyxNLDtAmBzaC77UNzEiWg31zrgmq44CqOmxLuyvfLyKdPFKBhxmimSbbDQ
+
 		authHeader := c.Request.Header.Get("Authorization")
 		if len(authHeader) == 0 {
 			c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("unauthorized")))

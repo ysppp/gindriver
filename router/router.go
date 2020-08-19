@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"gindriver/api"
 	"gindriver/middleware"
 	"github.com/gin-gonic/gin"
@@ -31,16 +30,13 @@ func InitRouter() *gin.Engine {
 	apiAuthRequiredRouter.Use(middleware.LoginRequired())
 	{
 		apiAuthRequiredRouter.GET("/:name", api.UserInfo)
+		apiAuthRequiredRouter.POST("/file/upload", api.UploadHandler)
 	}
 
 	// 404 Handler
 	app.NoRoute(NoRouterHandler)
 
 	return app
-}
-
-func UploadHandler(c *gin.Context) {
-	c.String(http.StatusOK, fmt.Sprintf("Query: %s", c.Query("test")))
 }
 
 func NoRouterHandler(c *gin.Context) {

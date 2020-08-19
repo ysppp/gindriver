@@ -15,4 +15,3 @@ export {
   API_REGISTER_FINISH,
   API_USER_INFO
 }
-
