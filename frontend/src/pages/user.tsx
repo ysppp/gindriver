@@ -14,13 +14,15 @@ class UserForm extends React.Component {
     this.state = {
       user: "User",
       uploadPerm: {disabled: true},
-      uploadHint: <p>You need to be <b>admin</b> to upload files</p>
+      uploadHint: <p>You need to be <b>admin</b> to upload files</p>,
+      jwt: null
     };
     this.onLoadUserFetch().then((username: string | null) => {
       if (username === null) {
         return invalidSessionJumpBack();
       }
       this.setState({user: `User: ${username}`});
+      this.setState({jwt: localStorage.getItem("jwt")});
       if (username === "admin") {
         this.setState({
           uploadPerm: {disabled: false},
@@ -56,7 +58,12 @@ class UserForm extends React.Component {
       }} onLoad={() => this.onLoadUserFetch()}>
         <Form ref={this.formRef}>
           <Form.Item name="dragger" valuePropName="fileList" getValueFromEvent={this.normFile} noStyle >
-            <Upload.Dragger name="files" action="/api/user/file/upload" {...this.state.uploadPerm}>
+            <Upload.Dragger name="files" action="/api/user/file/upload"
+                            multiple={false}
+                            headers={{
+                              Authorization: `Bearer ${this.state.jwt}`
+                            }}
+                            {...this.state.uploadPerm}>
               <p className="ant-upload-drag-icon">
                 <InboxOutlined/>
               </p>

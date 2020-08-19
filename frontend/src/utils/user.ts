@@ -3,6 +3,10 @@ import { errorMessage } from '../components/message';
 import { history } from 'umi';
 
 const getUserInfo = async () => {
+
+  // frontend debug
+  // return "admin";
+
   const username = localStorage.getItem("username");
   if (username === null) {
     return invalidSessionJumpBack();
