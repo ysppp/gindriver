@@ -15,7 +15,7 @@ func main() {
 	err = configor.
 		New(&configor.Config{
 			AutoReload:         true,
-			AutoReloadInterval: time.Minute,
+			AutoReloadInterval: time.Second,
 			AutoReloadCallback: func(config interface{}) {
 				fmt.Println("config reloaded")
 				err = utils.InitDatabase()
