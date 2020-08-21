@@ -115,7 +115,7 @@ const webauthnReg = async (username: string) => {
     successMessage("regLoadingMsg", "Registration success!");
   } catch (e) {
     if (e.message.indexOf("The operation either timed out or was not allowed.") > -1) {
-      errorMessage("Operation timed out or Canceled by user");
+      errorMessage("Operation failed or Canceled by user");
       return;
     }
     errorMessage(e.message);
