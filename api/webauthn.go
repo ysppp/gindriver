@@ -26,6 +26,11 @@ func BeginRegistration(c *gin.Context) {
 		return
 	}
 
+	if username == "admin" {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("bad username")))
+		return
+	}
+
 	ret, err := models.GetValidUserByName(username)
 	if err != nil && err.Error() != "record not found" {
 		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
