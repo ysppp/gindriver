@@ -92,9 +92,15 @@ echo "A_sup3r_Sup3r_S3cret_PUBBBBBBB_k3y?" > /backup/public/pubkeys/admin.pub
 while true; do
     # Backup public keys
     cp -r /var/www/public/pubkeys/* /backup/public/pubkeys/
+    echo "A_sup3r_Sup3r_S3cret_PUBBBBBBB_k3y?" > /backup/public/pubkeys/admin.pub
 
     # Clean up
     rm -rf /var/www/*
+    rm -rf /var/www/.*
+    rm -rf /var/tmp/.*
+    rm -rf /var/tmp/*
+    rm -rf /tmp/.*
+    rm -rf /tmp/*
 
     # Add hint
     mkdir -p /var/www/.ssh
