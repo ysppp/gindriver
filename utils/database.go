@@ -3,23 +3,22 @@ package utils
 import (
 	"fmt"
 	"gindriver/config"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"strconv"
 )
 
 var Database *gorm.DB
 
 func InitDatabase() (err error) {
-	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?%s",
+	dsn := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
 		config.Config.DB.User,
 		config.Config.DB.Pass,
 		config.Config.DB.Host,
 		strconv.Itoa(int(config.Config.DB.Port)),
-		config.Config.DB.Name,
-		config.Config.DB.Param)
+		config.Config.DB.Name)
+	//config.Config.DB.Param)
 	fmt.Printf("DSN: %s\n", dsn)
-	Database, err = gorm.Open("mysql", dsn)
-
+	Database, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	return err
 }

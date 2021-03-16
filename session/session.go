@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/duo-labs/webauthn/webauthn"
@@ -95,10 +94,10 @@ func (store *Store) GetWebauthnSession(key string, r *http.Request) (webauthn.Se
 
 // Set stores a value to the session with the provided key.
 func (store *Store) Set(key string, value interface{}, r *http.Request, w http.ResponseWriter) error {
-	session, err := store.Get(r, WebauthnSession)
-	if err != nil {
-		fmt.Printf("Error getting session %s", err)
-	}
+	session, _ := store.Get(r, WebauthnSession)
+	//if err != nil {
+	//	fmt.Printf("Error getting session %s", err)
+	//}
 	session.Values[key] = value
 	session.Save(r, w)
 	return nil

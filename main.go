@@ -33,10 +33,17 @@ func main() {
 	}
 
 	err = utils.InitDatabase()
-	defer utils.Database.Close()
 	if err != nil {
-		fmt.Printf("err: %s\n", err)
+		fmt.Printf("[InitDatabase] err: %s\n", err)
 	}
+
+	sqlDb, err := utils.Database.DB()
+	if err != nil {
+		fmt.Printf("[DB] err: %s\n", err)
+	}
+
+	defer sqlDb.Close()
+
 	if utils.Database != nil && err == nil {
 		utils.Database.AutoMigrate(&models.User{})
 	}

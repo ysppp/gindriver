@@ -10,7 +10,7 @@ import (
 )
 
 type User struct {
-	Id          uint64 `gorm:"type:bigint(64) unsigned;primary_key"`
+	Id          uint64 `gorm:"type:numeric ;primary_key"`
 	Valid       bool   `gorm:"type:bool"`
 	Name        string `gorm:"type:varchar(16)"`
 	DisplayName string `gorm:"type:varchar(16)"`
@@ -18,7 +18,7 @@ type User struct {
 	CredentialId              string `gorm:"type:varchar(1024)"`
 	CredentialAttestationType string `gorm:"type:varchar(1024)"`
 	AuthenticatorAAGUID       string `gorm:"type:varchar(1024)"`
-	AuthenticatorSignCount    uint32 `gorm:"type:int(64) unsigned"`
+	AuthenticatorSignCount    uint32 `gorm:"type:bigint check (authenticator_sign_count >= 0)"`
 	credentials               []webauthn.Credential
 }
 
@@ -28,7 +28,7 @@ func NewUser(name string, displayName string) *User {
 	user.Valid = false
 	user.Name = name
 	user.DisplayName = displayName
-	// user.credentials = []webauthn.Credential{}
+	user.credentials = []webauthn.Credential{}
 
 	return user
 }
@@ -131,7 +131,7 @@ func GetUserByName(username string) (u User, err error) {
 
 func GetValidUserByName(username string) (u User, err error) {
 	if err = utils.Database.
-		Where("name = ? and valid = 1", username).
+		Where("name = ? and valid = true", username).
 		First(&u).Error; err != nil {
 		return
 	}
