@@ -1,19 +1,30 @@
-import React, { useState }  from 'react';
-import {Card, Form, Input, Upload} from 'antd';
-import {InboxOutlined} from '@ant-design/icons';
-import {FormInstance} from 'antd/lib/form';
-import {getUserInfo, invalidSessionJumpBack} from '../utils/user';
+import React, { useState } from 'react';
+import { Card, Form, Input, Upload } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
+import { FormInstance } from 'antd/lib/form';
+import { getUserInfo, invalidSessionJumpBack } from '../utils/user';
+
+interface IProps {
+
+}
+
+interface IState {
+  user: string,
+  uploadPerm: { disabled: boolean },
+  uploadHint: React.ReactNode,
+  jwt: any
+}
 
 
 import styles from './user.css';
 
-class UserForm extends React.Component {
+class UserForm extends React.Component<IProps, IState> {
 
   constructor(props: Readonly<{}>) {
     super(props);
     this.state = {
       user: "User",
-      uploadPerm: {disabled: true},
+      uploadPerm: { disabled: true },
       uploadHint: <p>You need to be <b>admin</b> to upload files</p>,
       jwt: null
     };
@@ -21,11 +32,11 @@ class UserForm extends React.Component {
       if (username === null) {
         return invalidSessionJumpBack();
       }
-      this.setState({user: `User: ${username}`});
-      this.setState({jwt: localStorage.getItem("jwt")});
+      this.setState({ user: `User: ${username}` });
+      this.setState({ jwt: localStorage.getItem("jwt") });
       if (username === "admin") {
         this.setState({
-          uploadPerm: {disabled: false},
+          uploadPerm: { disabled: false },
           uploadHint: <p>Click or drag a file to this area to upload</p>
         });
       }
@@ -59,15 +70,15 @@ class UserForm extends React.Component {
         <Form ref={this.formRef}>
           <Form.Item name="dragger" valuePropName="fileList" getValueFromEvent={this.normFile} noStyle >
             <Upload.Dragger name="files" action="/api/user/file/upload"
-                            multiple={false}
-                            headers={{
-                              Authorization: `Bearer ${this.state.jwt}`
-                            }}
-                            {...this.state.uploadPerm}>
+              multiple={false}
+              headers={{
+                Authorization: `Bearer ${this.state.jwt}`
+              }}
+              {...this.state.uploadPerm}>
               <p className="ant-upload-drag-icon">
-                <InboxOutlined/>
+                <InboxOutlined />
               </p>
-              <p className="ant-upload-text" style={{padding: "1px"}}>{this.state.uploadHint}</p>
+              <p className="ant-upload-text" style={{ padding: "1px" }}>{this.state.uploadHint}</p>
             </Upload.Dragger>
           </Form.Item>
         </Form>
