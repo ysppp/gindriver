@@ -55,7 +55,7 @@ const webauthnLogin = async (username: string) => {
     localStorage.setItem("jwt", finishResponseBody.token);
     localStorage.setItem("username", username);
     setTimeout(() => {
-      history.push("/user");
+      history.push("/uploadDocument");
     }, 2500);
   } catch (e) {
     if (e.message.indexOf("The operation either timed out or was not allowed.") > -1) {

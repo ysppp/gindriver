@@ -1,0 +1,20 @@
+.ant-menu-inline-collapsed a{
+  max-width: 0;
+  opacity: 0;
+}
+
+.footer {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #002140;
+  cursor: pointer;
+}
+
+.menu {
+  position: relative;
+}

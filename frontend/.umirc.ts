@@ -7,13 +7,18 @@ const config: IConfig = {
       component: '../layouts/index',
       routes: [
         {
-          path: '/user',
-          component: './user',
+          path: '/uploadDocument',
+          component: '../pages/user',
+        },
+        {
+          path: '/login',
+          component: '../pages/login',
         },
         {
           path: '/',
-          component: '../pages/index',
-        },
+          component: '../pages/user',
+          exact: true
+        }
       ],
     },
   ],

@@ -1,6 +1,6 @@
 import React from 'react';
 import 'antd/dist/antd.css';
-import style from './index.css';
+import './login.css';
 import {Button, Card, Form, Input} from 'antd';
 import {FormInstance} from 'antd/lib/form';
 import {UserOutlined} from '@ant-design/icons';
