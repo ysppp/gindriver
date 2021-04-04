@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Upload } from 'antd';
+import { Card, Form, Input, Upload, Button} from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form';
 import { getUserInfo, invalidSessionJumpBack } from '../utils/user';
+import {webauthnLogout} from '../utils/webauthn'
 
 interface IProps {
 
@@ -34,7 +35,7 @@ class UserForm extends React.Component<IProps, IState> {
       }
       this.setState({ user: `User: ${username}` });
       this.setState({ jwt: localStorage.getItem("jwt") });
-      if (username === "admin") {
+      if (username === "test") {
         this.setState({
           uploadPerm: { disabled: false },
           uploadHint: <p>Click or drag a file to this area to upload</p>
@@ -61,13 +62,28 @@ class UserForm extends React.Component<IProps, IState> {
     return null;
   }
 
+  onLogoutAction = () => {
+    let username =  this.state.user;
+    if(username == null) {
+      console.log("err!");
+      return;
+    }
+    console.log(username);
+    webauthnLogout(username);
+  }
+
   render() {
+    // @ts-ignore
     return (
       // @ts-ignore
       <Card title={this.state.user} style={{
         width: "300px",
       }} onLoad={() => this.onLoadUserFetch()}>
+        <Button htmlType='submit' style={{width: "100%"}} onClick={this.onLogoutAction}>
+          注销
+        </Button>
         <Form ref={this.formRef}>
+
           <Form.Item name="dragger" valuePropName="fileList" getValueFromEvent={this.normFile} noStyle >
             <Upload.Dragger name="files" action="/api/user/file/upload"
               multiple={false}
@@ -83,6 +99,7 @@ class UserForm extends React.Component<IProps, IState> {
           </Form.Item>
         </Form>
       </Card>
+
     );
   }
 }

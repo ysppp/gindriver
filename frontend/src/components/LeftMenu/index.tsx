@@ -78,7 +78,7 @@ class LeftMenu extends React.Component<IProps, IState> {
       <div>
         <Menu
           selectedKeys={this.state.selectedKeys}
-          theme="dark"
+          theme="light"
           mode="inline"
           inlineCollapsed={this.state.collapsed}
           className="menu"
@@ -96,12 +96,13 @@ class LeftMenu extends React.Component<IProps, IState> {
             <UserOutlined />
             <Link to="/shareDocument">分享文件</Link>
           </Menu.Item>
+
           {/* <Menu.Item key="Problem">
             <BugOutlined />
             <Link to="/Problem"></Link>
           </Menu.Item> */}
           <div onClick={this.toggleCollapsed} className="footer">
-            {this.state.collapsed ? <MenuUnfoldOutlined style={{ color: 'white' }} /> : <MenuFoldOutlined style={{ color: 'white' }} />}
+            {this.state.collapsed ? <MenuUnfoldOutlined style={{ color: 'balck' }} /> : <MenuFoldOutlined style={{ color: 'black' }} />}
           </div>
         </Menu>
       </div>

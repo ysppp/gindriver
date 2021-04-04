@@ -56,12 +56,29 @@ const webauthnLogin = async (username: string) => {
     localStorage.setItem("username", username);
     setTimeout(() => {
       history.push("/uploadDocument");
-    }, 2500);
+    }, 0);
   } catch (e) {
     if (e.message.indexOf("The operation either timed out or was not allowed.") > -1) {
       errorMessage("Operation failed or Canceled by user");
       return;
     }
+    errorMessage(e.message);
+  }
+}
+
+const webauthnLogout = async (username : string) => {
+  loadingMessage("logoutLoadingMsg");
+  try {
+    // if (!username.match(/^[a-zA-Z0-9]{4,16}$/)) {
+    //   errorMessage("Bad username: ^[a-zA-Z0-9]{4,16}$");
+    //   return;
+    // }
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("username");
+    setTimeout(()=>{
+      history.push("/login");
+    },1000);
+  } catch (e) {
     errorMessage(e.message);
   }
 }
@@ -124,6 +141,7 @@ const webauthnReg = async (username: string) => {
 
 export {
   webauthnLogin,
+  webauthnLogout,
   webauthnReg,
   browserSupport
 }
