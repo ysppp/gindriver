@@ -1,11 +1,11 @@
 import React from 'react'
 import { Link } from 'umi'
-import { Button, Menu } from 'antd';
+import { withRouter } from 'react-router'
+import { Menu } from 'antd';
 import {
   FileImageOutlined,
   DesktopOutlined,
   UserOutlined,
-  BugOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined
 } from '@ant-design/icons';
@@ -13,7 +13,8 @@ import {
 import './index.css'
 
 interface IProps {
-
+  history: any,
+  location: any
 }
 
 interface IState {
@@ -25,13 +26,17 @@ class LeftMenu extends React.Component<IProps, IState> {
   constructor(props: IProps) {
     super(props)
     this.state = {
-      collapsed: true,
-      selectedKeys: [],
+      collapsed: false,
+      selectedKeys: ['uploadDocument'],
     };
   }
 
   toggleCollapsed = () => {
-
+    if (this.state.collapsed) {
+      document.documentElement.style.setProperty('--basicWidth', '200px')
+    } else {
+      document.documentElement.style.setProperty('--basicWidth', '0')
+    }
     this.setState({
       collapsed: !this.state.collapsed,
     });
@@ -44,32 +49,36 @@ class LeftMenu extends React.Component<IProps, IState> {
   }
 
   componentDidMount() {
-    // this.props.history.listen(
-    //   () => {
-    //     setTimeout(() => {
-    //       const path = this.props.location.pathname.slice(1)
-    //       this.setState({
-    //         selectedKeys: [path]
-    //       })
-    //       switch (path) {
-    //         case 'AddArticle':
-    //           this.props.setCurrentPath('写作台')
-    //           break
-    //         case 'ArticleList':
-    //           this.props.setCurrentPath('个人中心')
-    //           break
-    //         case 'Problem':
-    //           this.props.setCurrentPath('问题反馈')
-    //           break
-    //         default:
-    //           this.props.setCurrentPath('图片管理')
-    //       }
-    //     }, 0)
-    //   }
-    // )
-    // this.setState({
-    //   selectedKeys: [this.props.location.pathname.slice(1)]
-    // })
+    
+    this.props.history.listen(
+      () => {
+        setTimeout(() => {
+          const path = this.props.location.pathname.slice(1)
+          this.setState({
+            selectedKeys: [path]
+          })
+          // switch (path) {
+          //   case 'AddArticle':
+          //     this.props.setCurrentPath('写作台')
+          //     break
+          //   case 'ArticleList':
+          //     this.props.setCurrentPath('个人中心')
+          //     break
+          //   case 'Problem':
+          //     this.props.setCurrentPath('问题反馈')
+          //     break
+          //   default:
+          //     this.props.setCurrentPath('图片管理')
+          // }
+        }, 0)
+      }
+    )
+    const path = this.props.location.pathname.slice(1)
+    if (path) {
+      this.setState({
+        selectedKeys: [path]
+      })
+    }
   }
 
 
@@ -78,6 +87,7 @@ class LeftMenu extends React.Component<IProps, IState> {
       <div>
         <Menu
           selectedKeys={this.state.selectedKeys}
+          defaultActiveFirst={true}
           theme="light"
           mode="inline"
           inlineCollapsed={this.state.collapsed}
@@ -110,4 +120,4 @@ class LeftMenu extends React.Component<IProps, IState> {
   }
 }
 
-export default LeftMenu
+export default withRouter(LeftMenu as any)

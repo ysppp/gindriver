@@ -18,6 +18,11 @@ const config: IConfig = {
           path: '/',
           component: '../pages/user',
           exact: true
+        },
+        {
+          path: 'downloadDocument',
+          component: '../pages/download',
+          exact: true
         }
       ],
     },

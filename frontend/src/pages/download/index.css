@@ -1,0 +1,14 @@
+.container {
+  height: 100%;
+  width: 100%;
+  padding: 10px 0 0 10px;
+}
+
+.headButton {
+  margin-bottom: 10px;
+}
+
+.buttonMargin {
+  margin-left: 10px;
+  color: #1890ff;
+}
