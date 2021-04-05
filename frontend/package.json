@@ -11,6 +11,7 @@
     "@ant-design/icons": "^4.2.2",
     "@github/webauthn-json": "^0.4.5",
     "antd": "^4.5.3",
+    "dayjs": "^1.10.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
   },
