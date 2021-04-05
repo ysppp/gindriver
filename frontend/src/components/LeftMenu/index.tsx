@@ -49,6 +49,7 @@ class LeftMenu extends React.Component<IProps, IState> {
   }
 
   componentDidMount() {
+    
     this.props.history.listen(
       () => {
         setTimeout(() => {
@@ -72,9 +73,12 @@ class LeftMenu extends React.Component<IProps, IState> {
         }, 0)
       }
     )
-    this.setState({
-      selectedKeys: [this.props.location.pathname.slice(1)]
-    })
+    const path = this.props.location.pathname.slice(1)
+    if (path) {
+      this.setState({
+        selectedKeys: [path]
+      })
+    }
   }
 
 
