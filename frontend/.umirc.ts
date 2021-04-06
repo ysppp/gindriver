@@ -6,24 +6,24 @@ const config: IConfig = {
       path: '/',
       component: '../layouts/index',
       routes: [
-        {
-          path: '/uploadDocument',
-          component: '../pages/user',
-        },
+        // {
+        //   path: '/uploadDocument',
+        //   component: '../pages/user',
+        // },
         {
           path: '/login',
           component: '../pages/login',
         },
         {
           path: '/',
-          component: '../pages/user',
-          exact: true
-        },
-        {
-          path: 'downloadDocument',
           component: '../pages/download',
           exact: true
-        }
+        },
+        // {
+        //   path: 'downloadDocument',
+        //   component: '../pages/download',
+        //   exact: true
+        // }
       ],
     },
   ],
