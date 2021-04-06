@@ -1,6 +1,6 @@
-:root {
+/* :root {
   --basicWidth: 200px
-}
+} */
 .normal {
   font-family: Consolas, sans-serif;
   height: 100%;
@@ -19,13 +19,14 @@
   margin: 0;
 }
 
-.container {
+/* .container {
   display: flex;
   flex-grow: 1;
 }
 
 .contentLeft {
   flex-basis: var(--basicWidth);
+  flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.2, 0, 0, 1) 0s;
 }
 
@@ -51,5 +52,5 @@
   display: flex;
   justify-content: center;
   align-items: center;
-}
+} */
 
