@@ -10,6 +10,23 @@
 
 .headButton {
   margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.headButtonRight {
+  margin-right: 50px;
+  cursor: pointer;
+}
+
+.headButtonRight  img{
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+}
+
+.headButtonRight  span {
+  margin-left: 5px;
 }
 
 .iconSpan {
@@ -53,6 +70,20 @@
 
 .contentRight {
   padding: 10px 0 0 10px;
+}
+
+.dropDownContainer {
+  background-color: rgb(241, 237, 237);
+  width: 100px;
+}
+
+.dropDownContainer > div {
+  padding: 16px;
+  cursor: pointer;
+}
+
+.dropDownContainer > div:hover {
+  background-color: #1890ff;
 }
 
 /* .contentRight {
