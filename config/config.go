@@ -12,8 +12,22 @@ var Config = struct {
 		Param string
 	}
 
-	ListenAddr    string
-	RPID          string
-	RPOrigin      string
-	RPDisplayName string
+	Redis struct {
+		Host  string
+		Port  uint
+		Index int
+	}
+
+	Oss struct {
+		AccessKeyId     string
+		AccessKeySecret string
+		EndPoint        string
+		BucketName      string
+	}
+
+	ListenAddr     string
+	RPID           string
+	RPOrigin       string
+	RPDisplayName  string
+	UploadLocation string
 }{}

@@ -57,12 +57,13 @@ const DownLoad: React.FC = () => {
   const [data, setData] = useState<IData[]>([])
   const [uploadData, setUploadData] = useState<IUploadData>({
     user: 'User',
-    uploadPerm: { disabled: true },
-    uploadHint: <p>You need to be <b>admin</b> to upload files</p>,
+    uploadPerm: { disabled: false },
+    uploadHint: <p>Click or drag a file to this area to upload</p>,
     jwt: null
   })
   const [uploadModalVisible, setUploadModalVisible] = useState<boolean>(false)
 
+  const formRef = React.createRef<FormInstance>();
   const columns = [
     {
       title: 'Name',
@@ -103,10 +104,8 @@ const DownLoad: React.FC = () => {
     // }
   ];
 
-  const formRef = React.createRef<FormInstance>();
-
   // useEffect(() => {
-  //   axios.get(`/files?type=${Type.all}`).then(res => {
+  //   axios.get('/files?type=all').then(res => {
   //     setData(res.data)
   //   }).catch(() => { })
   // }, [])
@@ -119,10 +118,8 @@ const DownLoad: React.FC = () => {
       const newUploadData = cloneDeep(uploadData)
       newUploadData.user = `User: ${username}`
       newUploadData.jwt = localStorage.getItem("jwt")
-      if (username === "test") {
-        newUploadData.uploadPerm = { disabled: false }
-        newUploadData.uploadHint = <p>Click or drag a file to this area to upload</p>
-      }
+      newUploadData.uploadPerm = { disabled: false }
+      newUploadData.uploadHint = <p>Click or drag a file to this area to upload</p>
       setUploadData(newUploadData)
     });
   }, [])
@@ -186,7 +183,6 @@ const DownLoad: React.FC = () => {
   const menu = (
     <div className={styles.dropDownContainer}>
       <div onClick={onLogoutAction}>注销</div>
-      <div>修改密码</div>
     </div>
   )
 
@@ -275,7 +271,7 @@ const DownLoad: React.FC = () => {
 
                 <Form.Item name="dragger" valuePropName="fileList" getValueFromEvent={normFile} noStyle >
                   <Upload.Dragger name="files" action="/api/user/file/upload"
-                    multiple={false}
+                    multiple={true}
                     headers={{
                       Authorization: `Bearer ${uploadData.jwt}`
                     }}

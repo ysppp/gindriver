@@ -10,33 +10,34 @@ import (
 )
 
 type User struct {
-	Id          uint64 `gorm:"type:numeric ;primary_key"`
-	Valid       bool   `gorm:"type:bool"`
-	Name        string `gorm:"type:varchar(16)"`
-	DisplayName string `gorm:"type:varchar(16)"`
+	Id          uint64 `gorm:"column:id;type:numeric ;primary_key"`
+	FileStoreId uint64 `gorm:"column:filestoreid;type:numeric"`
+	Valid       bool   `gorm:"column:valid;type:bool"`
+	Name        string `gorm:"column:name;type:varchar(16)"`
+	DisplayName string `gorm:"column:displayname;type:varchar(16)"`
 
-	CredentialId              string `gorm:"type:varchar(1024)"`
-	CredentialAttestationType string `gorm:"type:varchar(1024)"`
-	AuthenticatorAAGUID       string `gorm:"type:varchar(1024)"`
-	AuthenticatorSignCount    uint32 `gorm:"type:bigint check (authenticator_sign_count >= 0)"`
+	CredentialId              string `gorm:"column:credentialid;gorm:"type:varchar(1024)"`
+	CredentialAttestationType string `gorm:"column:credentialattestationtype;gorm:"type:varchar(1024)"`
+	AuthenticatorAAGUID       string `gorm:"column:authenticatoraaguid;gorm:"type:varchar(1024)"`
+	AuthenticatorSignCount    uint32 `gorm:"column:authenticatorsigncount;gorm:"type:bigint check (authenticator_sign_count >= 0)"`
 	credentials               []webauthn.Credential
 }
 
 func NewUser(name string, displayName string) *User {
 	user := &User{}
-	user.Id = randomUint64()
+	user.Id = uint64(randomUint64())
 	user.Valid = false
 	user.Name = name
 	user.DisplayName = displayName
 	user.credentials = []webauthn.Credential{}
-
+	//user.FileStoreId = fileStoreId
 	return user
 }
 
-func randomUint64() uint64 {
+func randomUint64() uint32 {
 	buf := make([]byte, 8)
 	rand.Read(buf)
-	return binary.LittleEndian.Uint64(buf)
+	return binary.LittleEndian.Uint32(buf)
 }
 
 // WebAuthnID returns the user's ID
@@ -122,7 +123,7 @@ func (u User) Insert() (user *User, err error) {
 
 func GetUserByName(username string) (u User, err error) {
 	if err = utils.Database.
-		Where("name = ?", username).
+		Where("Name = ?", username).
 		First(&u).Error; err != nil {
 		return
 	}
@@ -131,9 +132,15 @@ func GetUserByName(username string) (u User, err error) {
 
 func GetValidUserByName(username string) (u User, err error) {
 	if err = utils.Database.
-		Where("name = ? and valid = true", username).
+		Where("Name = ? and Valid = true", username).
 		First(&u).Error; err != nil {
 		return
 	}
+	return
+}
+
+//根据Id查询用户
+func GetUserInfoByName(userName interface{}) (user User) {
+	utils.Database.Find(&user, "Name=?", userName)
 	return
 }

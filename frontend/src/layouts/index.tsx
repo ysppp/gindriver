@@ -7,7 +7,7 @@ const BasicLayout: React.FC = props => {
     <div className={styles.normal}>
       <h1 className={styles.title}>GinDriver</h1>
       {
-        // location.href.indexOf('login') !== -1 ?
+        //location.href.indexOf('login') !== -1 ?
         props.children
         // :
         // <div className={styles.container}>

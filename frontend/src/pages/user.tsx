@@ -86,7 +86,7 @@ class UserForm extends React.Component<IProps, IState> {
 
           <Form.Item name="dragger" valuePropName="fileList" getValueFromEvent={this.normFile} noStyle >
             <Upload.Dragger name="files" action="/api/user/file/upload"
-              multiple={false}
+              multiple={true}
               headers={{
                 Authorization: `Bearer ${this.state.jwt}`
               }}

@@ -46,6 +46,10 @@ func main() {
 
 	if utils.Database != nil && err == nil {
 		utils.Database.AutoMigrate(&models.User{})
+		utils.Database.AutoMigrate(&models.FileFolder{})
+		utils.Database.AutoMigrate(&models.File{})
+		utils.Database.AutoMigrate(&models.Share{})
+		utils.Database.AutoMigrate(&models.FileStore{})
 	}
 
 	err = utils.InitWebAuthn()

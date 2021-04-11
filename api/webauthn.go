@@ -42,6 +42,16 @@ func BeginRegistration(c *gin.Context) {
 	}
 
 	newUser := models.NewUser(username, username)
+
+	// 默认1GB
+	newFileStore := models.NewFileStore(newUser.Id, 1073741824)
+	if _, err := newFileStore.Insert(); err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+		return
+	}
+
+	newUser.FileStoreId = newFileStore.FileStoreId
+
 	if newUser, err = newUser.Insert(); err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
 		return

@@ -8,7 +8,19 @@ db:
   port: 5432
   param: "charset=utf8&loc=Local"
 
+redis:
+  host: "127.0.0.1"
+  port: 6379
+  index: 1
+
+oss:
+  access_key_id: "LTAI5tQo6RLrxJZs4LhaWtrN"
+  access_key_secret: "fZOV8JlCVhuR5p4RLTI7ibRntYJfEI"
+  end_point: "http://oss-cn-beijing.aliyuncs.com"
+  bucket_name: "filefree"
+
 listenaddr: "127.0.0.1:60082"
 rpid: "www.bickik.com"
 rporigin: "https://www.bickik.com/"
 rpdisplayname: "FileFree"
+uploadlocation: "C:/Users/yaoso/Documents/upload/"
