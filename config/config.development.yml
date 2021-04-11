@@ -14,8 +14,8 @@ redis:
   index: 1
 
 oss:
-  access_key_id: "LTAI5tQo6RLrxJZs4LhaWtrN"
-  access_key_secret: "fZOV8JlCVhuR5p4RLTI7ibRntYJfEI"
+  access_key_id: ""
+  access_key_secret: ""
   end_point: "http://oss-cn-beijing.aliyuncs.com"
   bucket_name: "filefree"
 
