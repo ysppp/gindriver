@@ -209,12 +209,15 @@ const DownLoad: React.FC = () => {
     axios({
       url: '/api/user/file/upload',
       method: 'POST',
-      data
+      data,
+      headers: {
+        Authorization: `Bearer ${uploadData.jwt}`
+      }
     }).then(() => {
       message.success('上传文件成功')
       setFileList([])
       setModalVisible(false)
-    }).catch(() => {})
+    }).catch(() => { })
   }
 
   return (
@@ -304,9 +307,6 @@ const DownLoad: React.FC = () => {
                   <Upload.Dragger
                     name="files"
                     multiple={true}
-                    headers={{
-                      Authorization: `Bearer ${uploadData.jwt}`
-                    }}
                     fileList={fileList}
                     onChange={fileOnchange}
                     {...uploadData.uploadPerm}
