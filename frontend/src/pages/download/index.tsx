@@ -62,6 +62,7 @@ const DownLoad: React.FC = () => {
     jwt: null
   })
   const [uploadModalVisible, setUploadModalVisible] = useState<boolean>(false)
+  const [fileList, setFileList] = useState([])
 
   const formRef = React.createRef<FormInstance>();
   const columns = [
@@ -125,7 +126,6 @@ const DownLoad: React.FC = () => {
   }, [])
 
   const normFile = (e: { fileList: any; }) => {
-    console.log('Upload event:', e);
     if (Array.isArray(e)) {
       return e;
     }
@@ -185,6 +185,37 @@ const DownLoad: React.FC = () => {
       <div onClick={onLogoutAction}>注销</div>
     </div>
   )
+
+  const fileOnchange = (info) => {
+    if (info.file?.status === 'done' || info.file?.status === 'removed') {
+      setFileList(info.fileList)
+    }
+  }
+
+  const uploadOnCancle = () => {
+    setUploadModalVisible(false)
+    setFileList([])
+  }
+
+  const uploadOnOk = () => {
+    if (fileList.length === 0) {
+      message.error('请上传文件')
+      return
+    }
+    const data = {
+      files: fileList,
+      userName: uploadData.user
+    }
+    axios({
+      url: '/api/user/file/upload',
+      method: 'POST',
+      data
+    }).then(() => {
+      message.success('上传文件成功')
+      setFileList([])
+      setModalVisible(false)
+    }).catch(() => {})
+  }
 
   return (
     <div className={styles.container}>
@@ -254,8 +285,8 @@ const DownLoad: React.FC = () => {
         <Modal
           maskClosable={false}
           visible={uploadModalVisible}
-          onCancel={() => setUploadModalVisible(false)}
-          onOk={() => { }}
+          onCancel={uploadOnCancle}
+          onOk={uploadOnOk}
         >
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Card
@@ -270,12 +301,16 @@ const DownLoad: React.FC = () => {
               <Form ref={formRef}>
 
                 <Form.Item name="dragger" valuePropName="fileList" getValueFromEvent={normFile} noStyle >
-                  <Upload.Dragger name="files" action="/api/user/file/upload"
+                  <Upload.Dragger
+                    name="files"
                     multiple={true}
                     headers={{
                       Authorization: `Bearer ${uploadData.jwt}`
                     }}
-                    {...uploadData.uploadPerm}>
+                    fileList={fileList}
+                    onChange={fileOnchange}
+                    {...uploadData.uploadPerm}
+                  >
                     <p className="ant-upload-drag-icon">
                       <InboxOutlined />
                     </p>
