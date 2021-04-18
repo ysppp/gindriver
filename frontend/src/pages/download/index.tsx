@@ -187,9 +187,7 @@ const DownLoad: React.FC = () => {
   )
 
   const fileOnchange = (info) => {
-    if (info.file?.status === 'done' || info.file?.status === 'removed') {
-      setFileList(info.fileList)
-    }
+    setFileList(info.fileList)
   }
 
   const uploadOnCancle = () => {
@@ -204,7 +202,7 @@ const DownLoad: React.FC = () => {
     }
     const data = {
       files: fileList,
-      userName: uploadData.user
+      // userName: uploadData.user
     }
     axios({
       url: '/api/user/file/upload',
@@ -218,6 +216,10 @@ const DownLoad: React.FC = () => {
       setFileList([])
       setModalVisible(false)
     }).catch(() => { })
+  }
+
+  const fileBeforeUpload = () => {
+    return false
   }
 
   return (
@@ -307,6 +309,7 @@ const DownLoad: React.FC = () => {
                   <Upload.Dragger
                     name="files"
                     multiple={true}
+                    beforeUpload={fileBeforeUpload}
                     fileList={fileList}
                     onChange={fileOnchange}
                     {...uploadData.uploadPerm}

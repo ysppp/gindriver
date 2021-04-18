@@ -5,7 +5,7 @@ import styles from './index.css';
 const BasicLayout: React.FC = props => {
   return (
     <div className={styles.normal}>
-      <h1 className={styles.title}>GinDriver</h1>
+      <h1 className={styles.title}>FileFree</h1>
       {
         //location.href.indexOf('login') !== -1 ?
         props.children
