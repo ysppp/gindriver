@@ -177,6 +177,7 @@ const DownLoad: React.FC = () => {
     setFileName('')
     setModalVisible(false)
     setData(newData)
+
     message.success('创建成功')
   }
 
@@ -200,21 +201,23 @@ const DownLoad: React.FC = () => {
       message.error('请上传文件')
       return
     }
-    const data = {
-      files: fileList,
-      // userName: uploadData.user
+    const formdata = new FormData()
+    const filesLength = fileList.length
+    for (let i = 0; i < filesLength; i++) {
+      formdata.append("files", fileList[i].originFileObj)
     }
     axios({
-      url: '/api/user/file/upload',
+      url: 'https://www.bickik.com/api/user/file/upload',
       method: 'POST',
-      data,
+      data: formdata,
       headers: {
         Authorization: `Bearer ${uploadData.jwt}`
+        // 'Content-Type': 'application/form-data'
       }
     }).then(() => {
       message.success('上传文件成功')
       setFileList([])
-      setModalVisible(false)
+      setUploadModalVisible(false)
     }).catch(() => { })
   }
 
@@ -319,6 +322,7 @@ const DownLoad: React.FC = () => {
                     </p>
                     <p className="ant-upload-text" style={{ padding: "1px" }}>{uploadData.uploadHint}</p>
                   </Upload.Dragger>
+
                 </Form.Item>
               </Form>
             </Card>

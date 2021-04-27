@@ -121,76 +121,82 @@ func UploadHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("not authorized")))
 		return
 	}
+	fmt.Println(username)
 	//获取用户信息
 	user := models.GetUserInfoByName(username)
 
 	Fid, _ := strconv.ParseUint(c.GetHeader("id"), 10, 64)
 	//conf := lib.LoadServerConfig()
 	//接收上传文件
-	file, err := c.FormFile("files")
+	form, err := c.MultipartForm()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(err))
 		fmt.Printf("Error: user:%s, Fid: %s, err: %s", user.Name, Fid, err)
 		return
 	}
-	//判断当前文件夹是否有同名文件
-	if ok := models.CurrFileExists(Fid, file.Filename); !ok {
+	files := form.File["files"]
+	fmt.Println("numbers of files: ", len(files))
+	for _, file := range files {
+		println("file name: %s", file.Filename)
+		//判断当前文件夹是否有同名文件
+		if ok := models.CurrFileExists(Fid, file.Filename); !ok {
+			c.JSON(http.StatusOK, gin.H{
+				"code": 501,
+			})
+			return
+		}
+
+		//判断用户的容量是否足够
+		if ok := models.CapacityIsEnough(file.Size, user.FileStoreId); !ok {
+			c.JSON(http.StatusOK, gin.H{
+				"code": 503,
+			})
+			return
+		}
+
+		if err != nil {
+			fmt.Println("文件上传错误", err.Error())
+			return
+		}
+		//defer file.Close()
+
+		//文件保存本地的路径
+		location := config.Config.UploadLocation + file.Filename
+		fmt.Println("%s", location)
+		//newFile, err := os.Create(location)
+		//在本地创建一个新的文件
+		err = c.SaveUploadedFile(file, location)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+			fmt.Println("文件创建失败", err.Error())
+			return
+		}
+
+		//将上传文件拷贝至新创建的文件中
+		//fileSize, err := io.Copy(newFile, file)
+		//if err != nil {
+		//	fmt.Println("文件拷贝错误", err.Error())
+		//	return
+		//}
+
+		//将光标移至开头
+		//_, _ = newFile.Seek(0, 0)
+		f, _ := os.Open(location)
+		fileHash := utils.GetSHA256HashCode(f)
+
+		defer f.Close()
+
+		//通过hash判断文件是否已上传过oss
+		if ok := models.FileOssExists(fileHash); ok {
+			//上传至阿里云oss
+			go lib.UploadOss(f.Name(), fileHash)
+			//新建文件信息
+			models.CreateFile(f.Name(), fileHash, file.Size, Fid, user.FileStoreId)
+			//上传成功减去相应剩余容量
+			models.SubtractSize(file.Size/1024, user.FileStoreId)
+		}
 		c.JSON(http.StatusOK, gin.H{
-			"code": 501,
+			"code": 200,
 		})
-		return
 	}
-
-	//判断用户的容量是否足够
-	if ok := models.CapacityIsEnough(file.Size, user.FileStoreId); !ok {
-		c.JSON(http.StatusOK, gin.H{
-			"code": 503,
-		})
-		return
-	}
-
-	if err != nil {
-		fmt.Println("文件上传错误", err.Error())
-		return
-	}
-	//defer file.Close()
-
-	//文件保存本地的路径
-	location := config.Config.UploadLocation + file.Filename
-
-	//newFile, err := os.Create(location)
-	//在本地创建一个新的文件
-	err = c.SaveUploadedFile(file, location)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
-		fmt.Println("文件创建失败", err.Error())
-		return
-	}
-
-	//将上传文件拷贝至新创建的文件中
-	//fileSize, err := io.Copy(newFile, file)
-	//if err != nil {
-	//	fmt.Println("文件拷贝错误", err.Error())
-	//	return
-	//}
-
-	//将光标移至开头
-	//_, _ = newFile.Seek(0, 0)
-	f, _ := os.Open(location)
-	fileHash := utils.GetSHA256HashCode(f)
-
-	defer f.Close()
-
-	//通过hash判断文件是否已上传过oss
-	if ok := models.FileOssExists(fileHash); ok {
-		//上传至阿里云oss
-		go lib.UploadOss(f.Name(), fileHash)
-		//新建文件信息
-		models.CreateFile(f.Name(), fileHash, file.Size, Fid, user.FileStoreId)
-		//上传成功减去相应剩余容量
-		models.SubtractSize(file.Size/1024, user.FileStoreId)
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-	})
 }
