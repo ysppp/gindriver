@@ -20,10 +20,12 @@ import LeftMenu from '../../components/LeftMenu'
 import styles from './index.css'
 
 interface IData {
-  key: number,
-  name: string,
-  size: number,
-  date: number
+  ParentFolderId: number
+  key: number
+  FileId: number,
+  FileName: string,
+  Size: number,
+  UploadTime: number
 }
 
 interface IUploadData {
@@ -39,15 +41,15 @@ export enum Type {
   video = 2
 }
 
-const dataSource: IData[] = [];
-for (let i = 0; i < 4; i++) {
-  dataSource.push({
-    key: i,
-    name: `文件${i}`,
-    size: 0,
-    date: new Date().getTime(),
-  });
-}
+// const dataSource: IData[] = [];
+// for (let i = 0; i < 4; i++) {
+//   dataSource.push({
+//     key: i,
+//     name: `文件${i}`,
+//     size: 0,
+//     date: new Date().getTime(),
+//   });
+// }
 
 
 const DownLoad: React.FC = () => {
@@ -68,18 +70,18 @@ const DownLoad: React.FC = () => {
   const columns = [
     {
       title: 'Name',
-      dataIndex: 'name',
+      dataIndex: 'FileName',
       width: 200,
       render: (text: string) => <a><img src="http://cdn.blogleeee.com/folder.png" style={{ marginRight: '6px' }} />{text}</a>
     },
     {
       title: 'Size',
-      dataIndex: 'size',
+      dataIndex: 'Size',
       width: 200,
     },
     {
       title: 'Date',
-      dataIndex: 'date',
+      dataIndex: 'UploadTime',
       width: 600,
       render: (date: number) => (
         <div style={{ display: 'flex', justifyContent: "space-between" }}>
@@ -105,11 +107,31 @@ const DownLoad: React.FC = () => {
     // }
   ];
 
-  // useEffect(() => {
-  //   axios.get('/files?type=all').then(res => {
-  //     setData(res.data)
-  //   }).catch(() => { })
-  // }, [])
+  useEffect(() => {
+    const jwt = localStorage.getItem("jwt")
+    axios({
+      url: '/api/file/getAll',
+      method: 'get',
+      headers: {
+        Authorization: `Bearer ${jwt}`
+      }
+    }).then(res => {
+      const { fileFolders, files } = res.data
+      // 将文件夹和文件整合到一个数组当中
+      const newFileFolders = fileFolders.map(item => {
+        item.key = item.FolderId
+        item.FileName = item.FolderName
+        item.Size = 0
+        item.UploadTime = item.time
+        return item
+      })
+      const formData = newFileFolders.concat(files.map((item: IData) => {
+        item.key = item.FileId
+        return item
+      }))
+      setData(formData)
+    }).catch(() => { })
+  }, [])
 
   useEffect(() => {
     onLoadUserFetch().then((username: string | null) => {
@@ -169,10 +191,12 @@ const DownLoad: React.FC = () => {
   const handleOk = () => {
     const newData = [...data]
     newData.unshift({
+      ParentFolderId: 0,
+      FileId: 20,
       key: 20,
-      name: fileName,
-      size: 0,
-      date: new Date().getTime(),
+      FileName: fileName,
+      Size: 0,
+      UploadTime: new Date().getTime(),
     });
     setFileName('')
     setModalVisible(false)
@@ -207,7 +231,7 @@ const DownLoad: React.FC = () => {
       formdata.append("files", fileList[i].originFileObj)
     }
     axios({
-      url: 'https://www.bickik.com/api/user/file/upload',
+      url: 'https://www.bickik.com/api/file/upload',
       method: 'POST',
       data: formdata,
       headers: {

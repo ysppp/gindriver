@@ -25,16 +25,20 @@ func InitRouter() *gin.Engine {
 	apiRouter.GET("/login/:name/begin", api.BeginLogin)
 	apiRouter.PATCH("/login/:name/finish", api.FinishLogin)
 
-	// Auth required router
 	apiAuthRequiredRouter := app.Group("/api/user/")
 	apiAuthRequiredRouter.Use(middleware.LoginRequired())
 	{
 		apiAuthRequiredRouter.GET("/:name", api.UserInfo)
-		apiAuthRequiredRouter.POST("/file/upload", api.UploadHandler)
-		//apiAuthRequiredRouter.GET("/file/download", api.DownloadFile)
-		apiAuthRequiredRouter.POST("/file/delete", api.DeleteFile)
-		apiAuthRequiredRouter.GET("/files", api.GetAllFiles)
-		apiAuthRequiredRouter.GET("/add/folder", api.AddFolder)
+	}
+
+	apiFileRouter := app.Group("/api/file")
+	apiFileRouter.Use(middleware.LoginRequired())
+	{
+		apiFileRouter.GET("/download", api.DownloadFile)
+		apiFileRouter.POST("/folder/add", api.AddFolder)
+		apiFileRouter.GET("/getAll", api.GetAllFiles)
+		apiFileRouter.POST("/upload", api.UploadHandler)
+		apiFileRouter.POST("/delete", api.DeleteFile)
 	}
 
 	// 404 Handler
