@@ -6,7 +6,6 @@ import (
 	"gindriver/models"
 	"gindriver/utils"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -74,10 +73,8 @@ func AddFolder(c *gin.Context) {
 			gin.H{"error": err.Error()})
 		return
 	}
-	log.Printf("%v", &json)
 	folderName := json.FileFolderName
 	parentId := json.ParentFolderId
-	fmt.Printf("%s, %d\n", folderName, parentId)
 
 	//新建文件夹数据
 	models.CreateFolder(folderName, parentId, user.FileStoreId)
