@@ -6,6 +6,7 @@ import (
 	"gindriver/models"
 	"gindriver/utils"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -51,6 +52,11 @@ func GetAllFiles(c *gin.Context) {
 	})
 }
 
+type structOfAddFolder struct {
+	FileFolderName string `json:"fileFolderName"`
+	ParentFolderId uint64 `json:"parentFolderId"`
+}
+
 //处理新建文件夹
 func AddFolder(c *gin.Context) {
 	username, ret := c.Get("SessionUser")
@@ -61,8 +67,17 @@ func AddFolder(c *gin.Context) {
 	//获取用户信息
 	user := models.GetUserInfoByName(username)
 
-	folderName := c.PostForm("fileFolderName")
-	parentId, _ := strconv.ParseUint(c.DefaultPostForm("parentFolderId", "0"), 10, 64)
+	json := structOfAddFolder{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+		return
+	}
+	log.Printf("%v", &json)
+	folderName := json.FileFolderName
+	parentId := json.ParentFolderId
+	fmt.Printf("%s, %d\n", folderName, parentId)
 
 	//新建文件夹数据
 	models.CreateFolder(folderName, parentId, user.FileStoreId)

@@ -171,12 +171,16 @@ const DownLoad: React.FC = () => {
 
   const handleOk = () => {
     const data = {
-      FileName: fileName,
-      FolderId: currentFolderId
+      fileFolderName: fileName,
+      parentFolderId: currentFolderId
     }
+    const jwt = localStorage.getItem('jwt')
     axios({
-      url: 'https://www.bickik.com/api/folder/add',
+      url: 'https://www.bickik.com/api/file/folder/add',
       method: 'post',
+      headers: {
+        Authorization: `Bearer ${jwt}`
+      },
       data
     }).then(() => {
       message.success('创建成功')
