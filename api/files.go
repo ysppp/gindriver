@@ -11,7 +11,7 @@ import (
 )
 
 //全部文件页面
-func Files(c *gin.Context) {
+func GetAllFiles(c *gin.Context) {
 	username, ret := c.Get("SessionUser")
 	if !ret {
 		c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("not authorized")))
@@ -19,21 +19,21 @@ func Files(c *gin.Context) {
 	}
 	//获取用户信息
 	user := models.GetUserInfoByName(username)
-	fId, _ := strconv.ParseUint(c.DefaultQuery("fId", "0"), 10, 64)
+	folderId, _ := strconv.ParseUint(c.DefaultQuery("fId", "0"), 10, 64)
 
 	//获取当前目录所有文件
-	files := models.GetUserFile(fId, user.FileStoreId)
+	files := models.GetUserFile(folderId, user.FileStoreId)
 	//获取当前目录所有文件夹
-	fileFolder := models.GetFileFolder(fId, user.FileStoreId)
+	fileFolders := models.GetFileFolder(folderId, user.FileStoreId)
 
 	//获取父级的文件夹信息
-	parentFolder := models.GetParentFolder(fId)
+	parentFolder := models.GetParentFolder(folderId)
 
 	//获取当前目录所有父级
 	currentAllParent := models.GetCurrentAllParent(parentFolder, make([]models.FileFolder, 0))
 
 	//获取当前目录信息
-	currentFolder := models.GetCurrentFolder(fId)
+	currentFolder := models.GetCurrentFolder(folderId)
 
 	//获取用户文件使用明细数量
 	fileDetailUse := models.GetFileDetailUse(user.FileStoreId)
@@ -44,7 +44,7 @@ func Files(c *gin.Context) {
 		"fId":              currentFolder.FolderId,
 		"fName":            currentFolder.FolderName,
 		"files":            files,
-		"fileFolder":       fileFolder,
+		"fileFolders":      fileFolders,
 		"parentFolder":     parentFolder,
 		"currentAllParent": currentAllParent,
 		"fileDetailUse":    fileDetailUse,

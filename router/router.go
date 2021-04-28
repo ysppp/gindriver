@@ -33,7 +33,8 @@ func InitRouter() *gin.Engine {
 		apiAuthRequiredRouter.POST("/file/upload", api.UploadHandler)
 		//apiAuthRequiredRouter.GET("/file/download", api.DownloadFile)
 		apiAuthRequiredRouter.POST("/file/delete", api.DeleteFile)
-
+		apiAuthRequiredRouter.GET("/files", api.GetAllFiles)
+		apiAuthRequiredRouter.GET("/add/folder", api.AddFolder)
 	}
 
 	// 404 Handler

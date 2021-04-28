@@ -8,6 +8,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 	//"time"
 )
 
@@ -24,18 +25,19 @@ type File struct {
 	PostFix string `gorm:"column:postfix;type:varchar(255)"` //	文件后缀
 
 	ParentFolderId uint64 `gorm:"column:parentfolderid;type:numeric"` //	父文件夹ID
+	UploadTime     string `gorm:"column:uploadtime;type:timestamp"`
 }
 
-func CreateFile(fileName, fileHash string, fileSize int64, fId, fileStoreId uint64) {
+func CreateFile(fileName, filePath, fileHash string, fileSize int64, fId, fileStoreId uint64) {
 	var sizeStr string
 
 	fileId := uint64(randomUint64())
 	// fileName may be like "/a/b/c.txt"
 	// fileSuffix will be ".txt", filePrefix will be "/a/b/c"
 	//获取文件后缀
-	fileSuffix := path.Ext(fileName)
+	fileSuffix := path.Ext(filePath)
 	//获取文件名
-	filePrefix := fileName[0 : len(fileName)-len(fileSuffix)]
+	//filePrefix := filePath[0 : len(filePath)-len(fileSuffix)]
 
 	if fileSize < 1048576 {
 		sizeStr = strconv.FormatInt(fileSize/1024, 10) + "KB"
@@ -45,12 +47,12 @@ func CreateFile(fileName, fileHash string, fileSize int64, fId, fileStoreId uint
 
 	myFile := File{
 		FileId:      fileId,
-		FileName:    filePrefix,
+		FileName:    fileName,
 		FileHash:    fileHash,
 		FileStoreId: fileStoreId,
-		FilePath:    "",
+		FilePath:    filePath,
 		//DownloadNum:    0,
-		//UploadTime:     time.Now().Format("2006-01-02 15:04:05"),
+		UploadTime:     time.Now().Format("2006-01-02 15:04:05"),
 		ParentFolderId: fId,
 		Size:           fileSize / 1024,
 		SizeStr:        sizeStr,
@@ -63,7 +65,7 @@ func CreateFile(fileName, fileHash string, fileSize int64, fId, fileStoreId uint
 
 //获取用户的文件
 func GetUserFile(parentId, storeId uint64) (files []File) {
-	utils.Database.Find(&files, "FileStoreId = ? and ParentFolderFd = ?", storeId, parentId)
+	utils.Database.Find(&files, "FileStoreId = ? and ParentFolderId = ?", storeId, parentId)
 	return
 }
 
@@ -123,14 +125,14 @@ func GetTypeFile(fileType, fileStoreId uint64) (files []File) {
 }
 
 //判断当前文件夹是否有同名文件
-func CurrFileExists(fId uint64, filename string) bool {
+func CurrFileExists(folderId uint64, filename string) bool {
 	var file File
 	//获取文件后缀
 	fileSuffix := strings.ToLower(path.Ext(filename))
 	//获取文件名
 	filePrefix := filename[0 : len(filename)-len(fileSuffix)]
 
-	utils.Database.Find(&file, "ParentFolderId=? and FileName=? and PostFix=?", fId, filePrefix, fileSuffix)
+	utils.Database.Find(&file, "ParentFolderId=? and FileName=? and PostFix=?", folderId, filePrefix, fileSuffix)
 
 	if file.Size > 0 {
 		return false

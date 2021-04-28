@@ -125,21 +125,21 @@ func UploadHandler(c *gin.Context) {
 	//获取用户信息
 	user := models.GetUserInfoByName(username)
 
-	Fid, _ := strconv.ParseUint(c.GetHeader("id"), 10, 64)
+	folderId, _ := strconv.ParseUint(c.GetHeader("id"), 10, 64)
 	//conf := lib.LoadServerConfig()
 	//接收上传文件
 	form, err := c.MultipartForm()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(err))
-		fmt.Printf("Error: user:%s, Fid: %s, err: %s", user.Name, Fid, err)
+		fmt.Printf("Error: user:%s, Fid: %s, err: %s", user.Name, folderId, err)
 		return
 	}
 	files := form.File["files"]
 	fmt.Println("numbers of files: ", len(files))
 	for _, file := range files {
-		println("file name: %s", file.Filename)
+		println("file name: ", file.Filename)
 		//判断当前文件夹是否有同名文件
-		if ok := models.CurrFileExists(Fid, file.Filename); !ok {
+		if ok := models.CurrFileExists(folderId, file.Filename); !ok {
 			c.JSON(http.StatusOK, gin.H{
 				"code": 501,
 			})
@@ -162,7 +162,7 @@ func UploadHandler(c *gin.Context) {
 
 		//文件保存本地的路径
 		location := config.Config.UploadLocation + file.Filename
-		fmt.Println("%s", location)
+		fmt.Println(location)
 		//newFile, err := os.Create(location)
 		//在本地创建一个新的文件
 		err = c.SaveUploadedFile(file, location)
@@ -172,15 +172,6 @@ func UploadHandler(c *gin.Context) {
 			return
 		}
 
-		//将上传文件拷贝至新创建的文件中
-		//fileSize, err := io.Copy(newFile, file)
-		//if err != nil {
-		//	fmt.Println("文件拷贝错误", err.Error())
-		//	return
-		//}
-
-		//将光标移至开头
-		//_, _ = newFile.Seek(0, 0)
 		f, _ := os.Open(location)
 		fileHash := utils.GetSHA256HashCode(f)
 
@@ -191,7 +182,7 @@ func UploadHandler(c *gin.Context) {
 			//上传至阿里云oss
 			go lib.UploadOss(f.Name(), fileHash)
 			//新建文件信息
-			models.CreateFile(f.Name(), fileHash, file.Size, Fid, user.FileStoreId)
+			models.CreateFile(file.Filename, f.Name(), fileHash, file.Size, folderId, user.FileStoreId)
 			//上传成功减去相应剩余容量
 			models.SubtractSize(file.Size/1024, user.FileStoreId)
 		}

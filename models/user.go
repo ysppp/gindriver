@@ -16,10 +16,10 @@ type User struct {
 	Name        string `gorm:"column:name;type:varchar(16)"`
 	DisplayName string `gorm:"column:displayname;type:varchar(16)"`
 
-	CredentialId              string `gorm:"column:credentialid;gorm:"type:varchar(1024)"`
-	CredentialAttestationType string `gorm:"column:credentialattestationtype;gorm:"type:varchar(1024)"`
-	AuthenticatorAAGUID       string `gorm:"column:authenticatoraaguid;gorm:"type:varchar(1024)"`
-	AuthenticatorSignCount    uint32 `gorm:"column:authenticatorsigncount;gorm:"type:bigint check (authenticator_sign_count >= 0)"`
+	CredentialId              string `gorm:"column:credentialid;type:varchar(1024)"`
+	CredentialAttestationType string `gorm:"column:credentialattestationtype;type:varchar(1024)"`
+	AuthenticatorAAGUID       string `gorm:"column:authenticatoraaguid;type:varchar(1024)"`
+	AuthenticatorSignCount    uint32 `gorm:"column:authenticatorsigncount;type:bigint check (authenticatorsigncount >= 0)"`
 	credentials               []webauthn.Credential
 }
 
@@ -29,6 +29,7 @@ func NewUser(name string, displayName string) *User {
 	user.Valid = false
 	user.Name = name
 	user.DisplayName = displayName
+	//user.FileStoreId = uint64(randomUint64())
 	user.credentials = []webauthn.Credential{}
 	//user.FileStoreId = fileStoreId
 	return user

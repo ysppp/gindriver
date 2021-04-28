@@ -2,23 +2,26 @@ package models
 
 import (
 	"gindriver/utils"
+	"time"
 )
 
 type FileFolder struct {
-	FolderId   uint64 `gorm:"column:folderid;type:integer ;primary_key"`
+	FolderId   uint64 `gorm:"column:folderid;type:numeric ;primary_key"`
 	FolderName string `gorm:"column:foldername;type:varchar(255)"`
 
-	ParentFolderId uint64 `gorm:"column:parentfolderid;type:integer"` //	父文件夹ID
-	FileStoreId    uint64 `gorm:"column:filestoreid;type:integer"`    //	文件所属仓库ID
+	ParentFolderId uint64 `gorm:"column:parentfolderid;type:numeric"` //	父文件夹ID
+	FileStoreId    uint64 `gorm:"column:filestoreid;type:numeric"`    //	文件所属仓库ID
+	Time           string `gorm:"column:time;type:timestamp"`
 }
 
 //新建文件夹
 func CreateFolder(folderName string, parentId, fileStoreId uint64) {
 	fileFolder := FileFolder{
+		FolderId:       uint64(randomUint64()),
 		FolderName:     folderName,
 		ParentFolderId: parentId,
 		FileStoreId:    fileStoreId,
-		//Time:           time.Now().Format("2006-01-02 15:04:05"),
+		Time:           time.Now().Format("2006-01-02 15:04:05"),
 	}
 	utils.Database.Create(&fileFolder)
 }

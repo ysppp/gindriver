@@ -51,6 +51,7 @@ func BeginRegistration(c *gin.Context) {
 	}
 
 	newUser.FileStoreId = newFileStore.FileStoreId
+	models.CreateFolder("#", 0, newFileStore.FileStoreId) //为当前用户创建一个默认的根文件夹
 
 	if newUser, err = newUser.Insert(); err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
