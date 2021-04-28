@@ -76,7 +76,7 @@ const webauthnLogout = async (username : string) => {
     localStorage.removeItem("jwt");
     localStorage.removeItem("username");
     setTimeout(()=>{
-      history.push("/login");
+      // history.push("/login");
     },1000);
   } catch (e) {
     errorMessage(e.message);

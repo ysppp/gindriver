@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { history } from 'umi';
 import {
   Button, Table, Modal,
   Input, message, Form, Card,
@@ -41,17 +40,6 @@ export enum Type {
   video = 2
 }
 
-// const dataSource: IData[] = [];
-// for (let i = 0; i < 4; i++) {
-//   dataSource.push({
-//     key: i,
-//     name: `文件${i}`,
-//     size: 0,
-//     date: new Date().getTime(),
-//   });
-// }
-
-
 const DownLoad: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([])
   const [modalVisible, setModalVisible] = useState<boolean>(false)
@@ -65,6 +53,7 @@ const DownLoad: React.FC = () => {
   })
   const [uploadModalVisible, setUploadModalVisible] = useState<boolean>(false)
   const [fileList, setFileList] = useState([])
+  const [currentFolderId, setCurrentFolderId] = useState<number>(0)
 
   const formRef = React.createRef<FormInstance>();
   const columns = [
@@ -93,21 +82,9 @@ const DownLoad: React.FC = () => {
         </div>
       )
     },
-    // {
-    //   title: '',
-    //   dataIndex: 'action',
-    //   render: () => {
-    //     return (
-    //       <span>
-    //         <ShareAltOutlined style={{ color: '#1890ff' }} />
-    //         <DownloadOutlined style={{ color: '#1890ff' }} />
-    //       </span>
-    //     )
-    //   }
-    // }
   ];
 
-  useEffect(() => {
+  const getFilesData = () => {
     const jwt = localStorage.getItem("jwt")
     axios({
       url: '/api/file/getAll',
@@ -131,6 +108,10 @@ const DownLoad: React.FC = () => {
       }))
       setData(formData)
     }).catch(() => { })
+  }
+
+  useEffect(() => {
+    getFilesData()
   }, [])
 
   useEffect(() => {
@@ -189,20 +170,22 @@ const DownLoad: React.FC = () => {
   }
 
   const handleOk = () => {
-    const newData = [...data]
-    newData.unshift({
-      ParentFolderId: 0,
-      FileId: 20,
-      key: 20,
+    const data = {
       FileName: fileName,
-      Size: 0,
-      UploadTime: new Date().getTime(),
-    });
-    setFileName('')
-    setModalVisible(false)
-    setData(newData)
+      FolderId: currentFolderId
+    }
+    axios({
+      url: 'https://www.bickik.com/api/folder/add',
+      method: 'post',
+      data
+    }).then(() => {
+      message.success('创建成功')
+      setFileName('')
+      setModalVisible(false)
+      getFilesData()
+    }).catch(() => {
 
-    message.success('创建成功')
+    })
   }
 
   const menu = (
@@ -242,6 +225,7 @@ const DownLoad: React.FC = () => {
       message.success('上传文件成功')
       setFileList([])
       setUploadModalVisible(false)
+      getFilesData()
     }).catch(() => { })
   }
 
