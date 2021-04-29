@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import {
   Button, Table, Modal,
   Input, message, Form, Card,
-  Upload, Dropdown, Menu
+  Upload, Dropdown, Menu, Popconfirm
 } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import {
@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { cloneDeep } from 'lodash'
-import axios from 'axios'
+import axios from '../../utils/axios'
 import { getUserInfo, invalidSessionJumpBack } from '../../utils/user';
 import { webauthnLogout } from '../../utils/webauthn'
 import LeftMenu from '../../components/LeftMenu'
@@ -25,6 +25,7 @@ interface IData {
   FileName: string,
   Size: number,
   UploadTime: number
+  FolderId: number
 }
 
 interface IUploadData {
@@ -61,7 +62,17 @@ const DownLoad: React.FC = () => {
       title: 'Name',
       dataIndex: 'FileName',
       width: 200,
-      render: (text: string) => <a><img src="http://cdn.blogleeee.com/folder.png" style={{ marginRight: '6px' }} />{text}</a>
+      render: (text: string, record: IData) => {
+        return (
+          <a onClick={() => {getFileByFileFolder(record)}}>
+            <img
+              src="http://cdn.blogleeee.com/folder.png"
+              style={{ marginRight: '6px' }}
+            />
+            {text}
+          </a>
+        )
+      }
     },
     {
       title: 'Size',
@@ -72,26 +83,69 @@ const DownLoad: React.FC = () => {
       title: 'Date',
       dataIndex: 'UploadTime',
       width: 600,
-      render: (date: number) => (
+      render: (date: number, record: IData) => (
         <div style={{ display: 'flex', justifyContent: "space-between" }}>
           <span>{dayjs(date).format('YYYY-MM-DD HH:mm:ss')}</span>
           <span style={{ marginRight: '60%' }} className={styles.iconSpan}>
-            <ShareAltOutlined style={{ color: '#1890ff', fontSize: '16px', marginRight: '10px', cursor: "pointer" }} />
-            <DownloadOutlined style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer" }} />
+            <ShareAltOutlined
+              style={{ color: '#1890ff', fontSize: '16px', marginRight: '10px', cursor: "pointer" }}
+            />
+            <Popconfirm
+              title={`确定要下载${record.FileName}吗？`}
+              onConfirm={() => {
+                downloadFile(record)
+              }}
+              onCancel={() => { }}
+              okText="Yes"
+              cancelText="No"
+            >
+              <DownloadOutlined style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer" }} />
+            </Popconfirm>
+
           </span>
         </div>
       )
     },
   ];
 
+  const getFileByFileFolder = (record:any) => {
+    if (record.FileId) return
+    getFilesData()
+  }
+
+  const downloadFile = (record: IData) => {
+    if (record.FolderId) return
+    axios({
+      url: '1111',
+      method: 'post',
+      data: {
+        fId: record.FileId
+      }
+    }).then((res) => {
+      const blob = res.data;
+      // FileReader主要用于将文件内容读入内存
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      // onload当读取操作成功完成时调用
+      reader.onload = function (e) {
+        const a = document.createElement('a');
+        // 获取文件名fileName
+        const fileName = record.FileName
+        a.download = fileName;
+        a.href = e.target?.result as string;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    }).catch(() => {
+
+    })
+  }
+
   const getFilesData = () => {
-    const jwt = localStorage.getItem("jwt")
     axios({
       url: '/api/file/getAll',
-      method: 'get',
-      headers: {
-        Authorization: `Bearer ${jwt}`
-      }
+      method: 'get'
     }).then(res => {
       const { fileFolders, files } = res.data
       // 将文件夹和文件整合到一个数组当中
@@ -174,13 +228,9 @@ const DownLoad: React.FC = () => {
       fileFolderName: fileName,
       parentFolderId: currentFolderId
     }
-    const jwt = localStorage.getItem('jwt')
     axios({
       url: 'https://www.bickik.com/api/file/folder/add',
       method: 'post',
-      headers: {
-        Authorization: `Bearer ${jwt}`
-      },
       data
     }).then(() => {
       message.success('创建成功')
@@ -220,11 +270,7 @@ const DownLoad: React.FC = () => {
     axios({
       url: 'https://www.bickik.com/api/file/upload',
       method: 'POST',
-      data: formdata,
-      headers: {
-        Authorization: `Bearer ${uploadData.jwt}`
-        // 'Content-Type': 'application/form-data'
-      }
+      data: formdata
     }).then(() => {
       message.success('上传文件成功')
       setFileList([])
