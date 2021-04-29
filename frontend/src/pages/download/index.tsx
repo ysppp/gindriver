@@ -322,11 +322,13 @@ const DownLoad: React.FC = () => {
         </div>
         <div className={styles.contentBody}>
           <Table
-            onRow={record => ({
+            onRow={(record: IData) => ({
               onMouseEnter(e: any) {
+                if (record.FolderId) return
                 e.target.parentNode.classList.add(styles.visible)
               },
               onMouseLeave(e: any) {
+                if (record.FolderId) return
                 e.target.parentNode.classList.remove(styles.visible)
               }
             })}
