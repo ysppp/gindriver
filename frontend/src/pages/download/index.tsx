@@ -53,7 +53,7 @@ const DownLoad: React.FC = () => {
     jwt: null
   })
   const [uploadModalVisible, setUploadModalVisible] = useState<boolean>(false)
-  const [fileList, setFileList] = useState([])
+  const [fileList, setFileList] = useState<{ originFileObj: Blob }[]>([])
   const [currentFolderArrId, setCurrentFolderArrId] = useState<number[]>([0])
 
   const formRef = React.createRef<FormInstance>();
@@ -64,7 +64,7 @@ const DownLoad: React.FC = () => {
       width: 200,
       render: (text: string, record: IData) => {
         return (
-          <a onClick={() => {getFileByFileFolder(record)}}>
+          <a onClick={() => { getFileByFileFolder(record) }}>
             <img
               src="http://cdn.blogleeee.com/folder.png"
               style={{ marginRight: '6px' }}
@@ -108,9 +108,12 @@ const DownLoad: React.FC = () => {
     },
   ];
 
-  const getFileByFileFolder = (record:IData) => {
+  const getFileByFileFolder = (record: IData) => {
     if (record.FileId) return
-    getFilesData(record)
+    const newArr = [...currentFolderArrId]
+    newArr.push(record.FolderId)
+    setCurrentFolderArrId(newArr)
+    getFilesData(record.FolderId)
   }
 
   const downloadFile = (record: IData) => {
@@ -143,14 +146,10 @@ const DownLoad: React.FC = () => {
     })
   }
 
-  const getFilesData = (record?: IData) => {
+  const getFilesData = (folderId?: number) => {
     let url = '/api/file/getAll'
-    console.log(record, 'record')
-    if (record) {
-      url = url + `?fId=${record.FolderId}`
-      const newArr = [...currentFolderArrId]
-      newArr.push(record.FolderId)
-      setCurrentFolderArrId(newArr)
+    if (folderId) {
+      url = url + `?fId=${folderId}`
     }
     axios({
       url,
@@ -235,7 +234,7 @@ const DownLoad: React.FC = () => {
   const handleOk = () => {
     const data = {
       fileFolderName: fileName,
-      parentFolderId: currentFolderId
+      parentFolderId: currentFolderArrId[currentFolderArrId.length - 1]
     }
     axios({
       url: 'https://www.bickik.com/api/file/folder/add',
@@ -245,7 +244,7 @@ const DownLoad: React.FC = () => {
       message.success('创建成功')
       setFileName('')
       setModalVisible(false)
-      getFilesData({FolderId: currentFolderArrId[currentFolderArrId.length - 1]} as IData)
+      getFilesData(currentFolderArrId[currentFolderArrId.length - 1])
     }).catch(() => {
 
     })
@@ -288,12 +287,18 @@ const DownLoad: React.FC = () => {
       message.success('上传文件成功')
       setFileList([])
       setUploadModalVisible(false)
-      getFilesData({FolderId: currentFolderArrId[currentFolderArrId.length - 1]} as IData)
+      getFilesData(currentFolderArrId[currentFolderArrId.length - 1])
     }).catch(() => { })
   }
 
   const fileBeforeUpload = () => {
     return false
+  }
+
+  const returnLastLevel = () => {
+    const length = currentFolderArrId.length
+    getFilesData(currentFolderArrId[length - 2])
+    setCurrentFolderArrId(currentFolderArrId.slice(0, length - 1))
   }
 
   return (
@@ -318,6 +323,15 @@ const DownLoad: React.FC = () => {
             >
               新建文件夹
             </Button>
+            {
+              currentFolderArrId.length > 1 &&
+              <Button
+                className={styles.buttonMargin}
+                onClick={returnLastLevel}
+              >
+                返回上一级
+              </Button>
+            }
           </div>
           <div className={styles.headButtonRight}>
             <Dropdown
