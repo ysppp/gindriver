@@ -34,7 +34,7 @@ func InitRouter() *gin.Engine {
 	apiFileRouter := app.Group("/api/file")
 	apiFileRouter.Use(middleware.LoginRequired())
 	{
-		apiFileRouter.GET("/download", api.DownloadFile)
+		apiFileRouter.POST("/download", api.DownloadFile)
 		apiFileRouter.POST("/folder/add", api.AddFolder)
 		apiFileRouter.GET("/getAll", api.GetAllFiles)
 		apiFileRouter.POST("/upload", api.UploadHandler)

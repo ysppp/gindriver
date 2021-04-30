@@ -99,7 +99,8 @@ func DownloadFile(c *gin.Context) {
 	//models.DownloadNumAdd(fId)
 
 	c.Header("Content-disposition", "attachment;filename=\""+file.FileName+file.PostFix+"\"")
-	c.Data(http.StatusOK, "application/octect-stream", fileData)
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Data(http.StatusOK, "application/zip", fileData)
 }
 
 //删除文件

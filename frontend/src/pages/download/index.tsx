@@ -54,7 +54,7 @@ const DownLoad: React.FC = () => {
   })
   const [uploadModalVisible, setUploadModalVisible] = useState<boolean>(false)
   const [fileList, setFileList] = useState([])
-  const [currentFolderId, setCurrentFolderId] = useState<number>(0)
+  const [currentFolderArrId, setCurrentFolderArrId] = useState<number[]>([0])
 
   const formRef = React.createRef<FormInstance>();
   const columns = [
@@ -108,16 +108,17 @@ const DownLoad: React.FC = () => {
     },
   ];
 
-  const getFileByFileFolder = (record:any) => {
+  const getFileByFileFolder = (record:IData) => {
     if (record.FileId) return
-    getFilesData()
+    getFilesData(record)
   }
 
   const downloadFile = (record: IData) => {
     if (record.FolderId) return
     axios({
-      url: '1111',
+      url: '/api/file/download',
       method: 'post',
+      responseType: 'arraybuffer',
       data: {
         fId: record.FileId
       }
@@ -142,9 +143,17 @@ const DownLoad: React.FC = () => {
     })
   }
 
-  const getFilesData = () => {
+  const getFilesData = (record?: IData) => {
+    let url = '/api/file/getAll'
+    console.log(record, 'record')
+    if (record) {
+      url = url + `?fId=${record.FolderId}`
+      const newArr = [...currentFolderArrId]
+      newArr.push(record.FolderId)
+      setCurrentFolderArrId(newArr)
+    }
     axios({
-      url: '/api/file/getAll',
+      url,
       method: 'get'
     }).then(res => {
       const { fileFolders, files } = res.data
@@ -236,7 +245,7 @@ const DownLoad: React.FC = () => {
       message.success('创建成功')
       setFileName('')
       setModalVisible(false)
-      getFilesData()
+      getFilesData({FolderId: currentFolderArrId[currentFolderArrId.length - 1]} as IData)
     }).catch(() => {
 
     })
@@ -262,20 +271,24 @@ const DownLoad: React.FC = () => {
       message.error('请上传文件')
       return
     }
+    let url = 'https://www.bickik.com/api/file/upload'
+    if (currentFolderArrId.length > 1) {
+      url = url + `?fId=${currentFolderArrId[currentFolderArrId.length - 1]}`
+    }
     const formdata = new FormData()
     const filesLength = fileList.length
     for (let i = 0; i < filesLength; i++) {
       formdata.append("files", fileList[i].originFileObj)
     }
     axios({
-      url: 'https://www.bickik.com/api/file/upload',
+      url,
       method: 'POST',
       data: formdata
     }).then(() => {
       message.success('上传文件成功')
       setFileList([])
       setUploadModalVisible(false)
-      getFilesData()
+      getFilesData({FolderId: currentFolderArrId[currentFolderArrId.length - 1]} as IData)
     }).catch(() => { })
   }
 

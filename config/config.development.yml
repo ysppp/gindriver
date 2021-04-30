@@ -14,10 +14,10 @@ redis:
   index: 1
 
 oss:
-  access_key_id: ""
-  access_key_secret: ""
-  end_point: "http://oss-cn-beijing.aliyuncs.com"
-  bucket_name: "filefree"
+  accesskeyid: "LTAI5tQo6RLrxJZs4LhaWtrN"
+  accesskeysecret: "fZOV8JlCVhuR5p4RLTI7ibRntYJfEI"
+  endpoint: "http://oss-cn-beijing.aliyuncs.com"
+  bucketname: "filefree"
 
 listenaddr: "127.0.0.1:60082"
 rpid: "www.bickik.com"

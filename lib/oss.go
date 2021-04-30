@@ -15,7 +15,7 @@ func UploadOss(filename, fileHash string) {
 	//conf := LoadServerConfig()
 	// 创建OSSClient实例。
 	//client, err := oss.New(config.Config.Oss.EndPoint, config.Config.Oss.AccessKeyId, config.Config.Oss.AccessKeySecret)
-	client, err := oss.New("http://oss-cn-beijing.aliyuncs.com", "LTAI5tQo6RLrxJZs4LhaWtrN", "fZOV8JlCVhuR5p4RLTI7ibRntYJfEI")
+	client, err := oss.New(config.Config.Oss.EndPoint, config.Config.Oss.AccessKeyId, config.Config.Oss.AccessKeySecret)
 	if err != nil {
 		fmt.Println("创建实例Error:", err)
 		return

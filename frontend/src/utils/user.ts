@@ -46,7 +46,7 @@ const getUserInfo = async () => {
 const invalidSessionJumpBack = () => {
   errorMessage("Invalid session!");
   setTimeout(() => {
-    //  history.push("/login");
+     history.push("/login");
   }, 3500);
 }
 

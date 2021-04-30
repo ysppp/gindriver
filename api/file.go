@@ -125,7 +125,7 @@ func UploadHandler(c *gin.Context) {
 	//获取用户信息
 	user := models.GetUserInfoByName(username)
 
-	folderId, _ := strconv.ParseUint(c.GetHeader("id"), 10, 64)
+	folderId, _ := strconv.ParseUint(c.Query("fId"), 10, 64)
 	//conf := lib.LoadServerConfig()
 	//接收上传文件
 	form, err := c.MultipartForm()
