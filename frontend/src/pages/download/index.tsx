@@ -121,17 +121,18 @@ const DownLoad: React.FC = () => {
     axios({
       url: '/api/file/download',
       method: 'post',
-      responseType: 'arraybuffer',
-      data: {
+      responseType: 'blob',
+      data: JSON.stringify({
         fId: record.FileId
-      }
+      })
     }).then((res) => {
-      const blob = res.data;
+      const blob = res.data
       // FileReader主要用于将文件内容读入内存
       const reader = new FileReader();
       reader.readAsDataURL(blob);
       // onload当读取操作成功完成时调用
       reader.onload = function (e) {
+        console.log('到这里了')
         const a = document.createElement('a');
         // 获取文件名fileName
         const fileName = record.FileName
@@ -141,8 +142,8 @@ const DownLoad: React.FC = () => {
         a.click();
         document.body.removeChild(a);
       }
-    }).catch(() => {
-
+    }).catch((err) => {
+      console.log(err, 'err')
     })
   }
 

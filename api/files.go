@@ -51,9 +51,11 @@ func GetAllFiles(c *gin.Context) {
 	})
 }
 
-type structOfAddFolder struct {
+type structOfJson struct {
 	FileFolderName string `json:"fileFolderName"`
 	ParentFolderId uint64 `json:"parentFolderId"`
+	FileId         uint64 `json:"fId"`
+	FolderId       uint64 `json:"folderId"`
 }
 
 //处理新建文件夹
@@ -66,7 +68,7 @@ func AddFolder(c *gin.Context) {
 	//获取用户信息
 	user := models.GetUserInfoByName(username)
 
-	json := structOfAddFolder{}
+	json := structOfJson{}
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.AbortWithStatusJSON(
 			http.StatusInternalServerError,
@@ -78,15 +80,17 @@ func AddFolder(c *gin.Context) {
 
 	//新建文件夹数据
 	models.CreateFolder(folderName, parentId, user.FileStoreId)
-
-	//获取父文件夹信息
-	//parent := models.GetParentFolder(parentId)
-
-	//c.Redirect(http.StatusMovedPermanently, "/cloud/files?fId=" + parentId + "&fName=" + parent.FolderName)
 }
 
 func DownloadFile(c *gin.Context) {
-	fId := c.Query("fId")
+	json := structOfJson{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+		return
+	}
+	fId := json.FileId
 
 	file := models.GetFileInfo(fId)
 	if file.FileHash == "" {
@@ -100,7 +104,7 @@ func DownloadFile(c *gin.Context) {
 
 	c.Header("Content-disposition", "attachment;filename=\""+file.FileName+file.PostFix+"\"")
 	c.Header("Content-Transfer-Encoding", "binary")
-	c.Data(http.StatusOK, "application/zip", fileData)
+	c.Data(http.StatusOK, "application/octect-stream", fileData)
 }
 
 //删除文件
@@ -112,43 +116,45 @@ func DeleteFile(c *gin.Context) {
 	}
 	//获取用户信息
 	user := models.GetUserInfoByName(username)
-
-	fId := c.DefaultQuery("fId", "")
-	folderId := c.Query("folder")
-	if fId == "" {
-		return
+	json := structOfJson{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
 	}
+	fId := json.FileId
+	folderId := json.ParentFolderId
 
 	//删除数据库文件数据
 	models.DeleteUserFile(fId, folderId, user.FileStoreId)
-
-	c.Redirect(http.StatusMovedPermanently, "/cloud/files?fid="+folderId)
 }
 
 //删除文件夹
 func DeleteFileFolder(c *gin.Context) {
-	fId, err := strconv.ParseUint(c.DefaultQuery("fId", ""), 10, 64)
-	if err != nil {
-		fmt.Println("error: %s", err)
-		return
+	json := structOfJson{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
 	}
+	folderId := json.FolderId
 	//获取要删除的文件夹信息 取到父级目录重定向
-	folderInfo := models.GetCurrentFolder(fId)
+	//folderInfo := models.GetCurrentFolder(folderId)
 
 	//删除文件夹并删除文件夹中的文件信息
-	models.DeleteFileFolder(fId)
-
-	c.Redirect(http.StatusMovedPermanently, "/cloud/files?fId="+strconv.FormatUint(folderInfo.ParentFolderId, 10))
+	models.DeleteFileFolder(folderId)
 }
 
 //修改文件夹名
 func UpdateFileFolder(c *gin.Context) {
-	fileFolderName := c.PostForm("fileFolderName")
-	fileFolderId, _ := strconv.ParseUint(c.PostForm("fileFolderId"), 10, 64)
-
-	fileFolder := models.GetCurrentFolder(fileFolderId)
+	json := structOfJson{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+	}
+	fileFolderName := json.FileFolderName
+	fileFolderId := json.FolderId
 
 	models.UpdateFolderName(fileFolderId, fileFolderName)
-
-	c.Redirect(http.StatusMovedPermanently, "/cloud/files?fId="+strconv.FormatUint(fileFolder.ParentFolderId, 10))
 }

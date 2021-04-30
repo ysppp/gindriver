@@ -28,15 +28,15 @@ func CreateShare(code, username string, fId uint64) string {
 }
 
 //查询分享
-func GetShareInfo(f string) (share Share) {
-	utils.Database.Find(&share, "hash = ?", f)
+func GetShareInfo(hash string) (share Share) {
+	utils.Database.Find(&share, "hash = ?", hash)
 	return
 }
 
 //校验提取码
-func VerifyShareCode(fId, code string) bool {
+func VerifyShareCode(fId uint64, code, sharehash string) bool {
 	var share Share
-	utils.Database.Find(&share, "file_id = ? and code = ?", fId, code)
+	utils.Database.Find(&share, "fileid = ? and code = ? and sharehash = ?", fId, code, sharehash)
 	if share.ShareId == 0 {
 		return false
 	}

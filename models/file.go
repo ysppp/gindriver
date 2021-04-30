@@ -151,12 +151,12 @@ func FileOssExists(fileHash string) bool {
 }
 
 //通过fileId获取文件信息
-func GetFileInfo(fId string) (file File) {
+func GetFileInfo(fId uint64) (file File) {
 	utils.Database.First(&file, fId)
 	return
 }
 
 //删除数据库文件数据
-func DeleteUserFile(fId, folderId string, storeId uint64) {
+func DeleteUserFile(folderId, fId, storeId uint64) {
 	utils.Database.Where("FileId = ? and FileStoreId = ? and ParentFolderId = ?", fId, storeId, folderId).Delete(File{})
 }

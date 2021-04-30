@@ -9,7 +9,6 @@ import (
 
 func UserInfo(c *gin.Context) {
 	user, ret := c.Get("SessionUser")
-	fmt.Println(user)
 	if !ret {
 		c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("not authorized")))
 		return

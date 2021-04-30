@@ -11,6 +11,12 @@ import (
 	"strings"
 )
 
+type structOfShare struct {
+	FileId uint64 `json:"fileId"`
+	Code   string `json:"code"`
+	Hash   string `json:"hash"`
+}
+
 //创建分享文件
 func ShareFile(c *gin.Context) {
 	username, ret := c.Get("SessionUser")
@@ -37,14 +43,14 @@ func ShareFile(c *gin.Context) {
 
 //分享文件页面
 func SharePass(c *gin.Context) {
-	f := c.Query("f")
+	hash := c.Query("hash")
 
 	//获取分享信息
-	shareInfo := models.GetShareInfo(f)
+	shareInfo := models.GetShareInfo(hash)
 	//获取文件信息
-	file := models.GetFileInfo(strconv.Itoa(int(shareInfo.FileId)))
+	file := models.GetFileInfo(shareInfo.FileId)
 
-	c.HTML(http.StatusOK, "share.html", gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"id":       shareInfo.FileId,
 		"username": shareInfo.UserName,
 		"fileType": file.Type,
@@ -55,15 +61,22 @@ func SharePass(c *gin.Context) {
 
 //下载分享文件
 func DownloadShareFile(c *gin.Context) {
-	fileId := c.Query("id")
-	code := c.Query("code")
-	hash := c.Query("hash")
+	json := structOfShare{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+		return
+	}
+	fileId := json.FileId
+	code := json.Code
+	hash := json.Hash
 
 	fileInfo := models.GetFileInfo(fileId)
 
 	//校验提取码
-	if ok := models.VerifyShareCode(fileId, strings.ToLower(code)); !ok {
-		c.Redirect(http.StatusMovedPermanently, "/file/share?f="+hash)
+	if ok := models.VerifyShareCode(fileId, strings.ToLower(code), hash); !ok {
+		c.JSON(http.StatusOK, utils.SuccessWrapper("Error code!"))
 		return
 	}
 
