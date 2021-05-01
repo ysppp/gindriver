@@ -11,12 +11,14 @@ import {
   InboxOutlined
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import clipBoard from 'clipboard'
 import { cloneDeep } from 'lodash'
 import axios from '../../utils/axios'
 import { getUserInfo, invalidSessionJumpBack } from '../../utils/user';
 import { webauthnLogout } from '../../utils/webauthn'
 import LeftMenu from '../../components/LeftMenu'
 import styles from './index.css'
+import { Content } from 'antd/lib/layout/layout'
 
 interface IData {
   ParentFolderId: number
@@ -25,7 +27,9 @@ interface IData {
   FileName: string,
   Size: number,
   UploadTime: number
-  FolderId: number
+  FolderId: number,
+  FolderName: string,
+  time: number
 }
 
 interface IUploadData {
@@ -87,9 +91,20 @@ const DownLoad: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: "space-between" }}>
           <span>{dayjs(date).format('YYYY-MM-DD HH:mm:ss')}</span>
           <span style={{ marginRight: '60%' }} className={styles.iconSpan}>
-            <ShareAltOutlined
-              style={{ color: '#1890ff', fontSize: '16px', marginRight: '10px', cursor: "pointer" }}
-            />
+            <Popconfirm
+              title={`是否要分享文件${record.FileName}？`}
+              onConfirm={() => {
+                shareFile(record)
+              }}
+              onCancel={() => { }}
+              okText="Yes"
+              cancelText="No"
+            >
+              <ShareAltOutlined
+                style={{ color: '#1890ff', fontSize: '16px', marginRight: '10px', cursor: "pointer" }}
+              />
+            </Popconfirm>
+
             <Popconfirm
               title={`确定要下载${record.FileName}吗？`}
               onConfirm={() => {
@@ -132,7 +147,6 @@ const DownLoad: React.FC = () => {
       reader.readAsDataURL(blob);
       // onload当读取操作成功完成时调用
       reader.onload = function (e) {
-        console.log('到这里了')
         const a = document.createElement('a');
         // 获取文件名fileName
         const fileName = record.FileName
@@ -147,6 +161,42 @@ const DownLoad: React.FC = () => {
     })
   }
 
+  const shareFile = (record: IData) => {
+    axios({
+      url: 'api/file/share/add',
+      method: 'post',
+      data: {
+        id: record.FileId,
+        url: 'dadasda'
+      }
+    }).then(res => {
+      Modal.info({
+        title: '成功创建私密链接',
+        content: (
+          <>
+            <Input value="url" />
+          提取码<Input value="code" />
+          </>
+        ),
+        closable: true,
+        okText: <Button id="btn">复制链接及提取码</Button>,
+        onOk() {
+          const clipboard = new clipBoard('#btn', {
+            text() {
+              return '链接: https://pan.baidu.com/s/1AoynAF4urtqc1YPcXzD-7Q 提取码: s7y7'
+            }
+          })
+          clipboard.on('success', () => {
+            message.success('复制成功')
+          })
+          clipboard.on('error', () => {
+            message.error('复制失败，请手动复制')
+          })
+        }
+      })
+    }).catch(() => { })
+  }
+
   const getFilesData = (folderId?: number) => {
     let url = '/api/file/getAll'
     if (folderId) {
@@ -158,7 +208,7 @@ const DownLoad: React.FC = () => {
     }).then(res => {
       const { fileFolders, files } = res.data
       // 将文件夹和文件整合到一个数组当中
-      const newFileFolders = fileFolders.map(item => {
+      const newFileFolders = fileFolders.map((item: IData) => {
         item.key = item.FolderId
         item.FileName = item.FolderName
         item.Size = 0
@@ -257,7 +307,7 @@ const DownLoad: React.FC = () => {
     </div>
   )
 
-  const fileOnchange = (info) => {
+  const fileOnchange = (info: { fileList: { originFileObj: Blob }[] }) => {
     setFileList(info.fileList)
   }
 
@@ -401,7 +451,7 @@ const DownLoad: React.FC = () => {
                     name="files"
                     multiple={true}
                     beforeUpload={fileBeforeUpload}
-                    fileList={fileList}
+                    fileList={fileList as any}
                     onChange={fileOnchange}
                     {...uploadData.uploadPerm}
                   >
@@ -418,9 +468,6 @@ const DownLoad: React.FC = () => {
         </Modal>
       </div>
     </div>
-    // <div className={styles.container}>
-
-    // </div >
   )
 }
 

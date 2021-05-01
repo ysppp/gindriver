@@ -1,0 +1,31 @@
+.shareBackground {
+  background-color: #f7f7f7;
+  height: 100%;
+  padding: 20px 0;
+}
+
+.shareContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  background-color: white;
+  border-radius: 5px;
+  width: 60%;
+  margin: 0 auto;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  flex-grow: 1;
+  background-color: #f6f9fd;
+  height: fit-content;
+}
