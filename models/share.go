@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"gindriver/utils"
 	"strings"
 	"time"
@@ -17,6 +18,7 @@ type Share struct {
 //创建分享
 func CreateShare(code, username string, fId uint64) string {
 	share := Share{
+		ShareId:   uint64(randomUint64()),
 		Code:      strings.ToLower(code),
 		FileId:    fId,
 		UserName:  username,
@@ -29,13 +31,14 @@ func CreateShare(code, username string, fId uint64) string {
 
 //查询分享
 func GetShareInfo(hash string) (share Share) {
-	utils.Database.Find(&share, "hash = ?", hash)
+	utils.Database.Find(&share, "sharehash = ?", hash)
 	return
 }
 
 //校验提取码
 func VerifyShareCode(fId uint64, code, sharehash string) bool {
 	var share Share
+	fmt.Printf("%d, %s, %s\n", fId, code, sharehash)
 	utils.Database.Find(&share, "fileid = ? and code = ? and sharehash = ?", fId, code, sharehash)
 	if share.ShareId == 0 {
 		return false

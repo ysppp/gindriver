@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { history } from 'umi';
 import {
   Button, Table, Modal,
   Input, message, Form, Card,
@@ -165,22 +166,24 @@ const DownLoad: React.FC = () => {
     axios({
       url: 'api/file/share/add',
       method: 'post',
-      data: {
-        id: record.FileId,
-        url: 'dadasda'
-      }
+      data: JSON.stringify({
+        fileId: record.FileId,
+        url: 'http://www.bickik.com/share'
+      })
     }).then(res => {
+      const data = res.data
       Modal.info({
         title: '成功创建私密链接',
         content: (
           <>
-            <Input value="url" />
-          提取码<Input value="code" />
+            <Input value={`${data.url}`} />
+          提取码<Input value={`${data.code}`} />
           </>
         ),
         closable: true,
         okText: <Button id="btn">复制链接及提取码</Button>,
         onOk() {
+          history.push("share?" + data.url.split("?")[1])
           const clipboard = new clipBoard('#btn', {
             text() {
               return '链接: https://pan.baidu.com/s/1AoynAF4urtqc1YPcXzD-7Q 提取码: s7y7'

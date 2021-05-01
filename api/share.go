@@ -7,7 +7,6 @@ import (
 	"gindriver/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -15,6 +14,7 @@ type structOfShare struct {
 	FileId uint64 `json:"fileId"`
 	Code   string `json:"code"`
 	Hash   string `json:"hash"`
+	Url    string `json:"url"`
 }
 
 //创建分享文件
@@ -27,12 +27,18 @@ func ShareFile(c *gin.Context) {
 	//获取用户信息
 	user := models.GetUserInfoByName(username)
 
-	fId := c.Query("id")
-	url := c.Query("url")
+	json := structOfShare{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+		return
+	}
+	fileId := json.FileId
+	url := json.Url
 	//获取内容
 	code := utils.GetRandomString(4)
 
-	fileId, _ := strconv.Atoi(fId)
 	hash := models.CreateShare(code, user.Name, uint64(fileId))
 
 	c.JSON(http.StatusOK, gin.H{
@@ -43,8 +49,14 @@ func ShareFile(c *gin.Context) {
 
 //分享文件页面
 func SharePass(c *gin.Context) {
-	hash := c.Query("hash")
-
+	json := structOfShare{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+		return
+	}
+	hash := json.Hash
 	//获取分享信息
 	shareInfo := models.GetShareInfo(hash)
 	//获取文件信息
@@ -54,7 +66,7 @@ func SharePass(c *gin.Context) {
 		"id":       shareInfo.FileId,
 		"username": shareInfo.UserName,
 		"fileType": file.Type,
-		"filename": file.FileName + file.PostFix,
+		"filename": file.FileName,
 		"hash":     shareInfo.ShareHash,
 	})
 }
@@ -76,7 +88,7 @@ func DownloadShareFile(c *gin.Context) {
 
 	//校验提取码
 	if ok := models.VerifyShareCode(fileId, strings.ToLower(code), hash); !ok {
-		c.JSON(http.StatusOK, utils.SuccessWrapper("Error code!"))
+		c.JSON(http.StatusBadRequest, utils.SuccessWrapper("Error code!"))
 		return
 	}
 

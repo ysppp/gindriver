@@ -13,7 +13,7 @@ interface IFileInfo {
   id: number
   username: string
   fileType: string
-  fileName: string
+  filename: string
   hash: string
 }
 
@@ -27,9 +27,9 @@ const Share: React.FC = () => {
     axios({
       url: 'api/file/share/show',
       method: 'post',
-      data: {
-        hash: hashObject.code
-      }
+      data: JSON.stringify({
+        hash: hashObject.f
+      })
     }).then((res) => {
       setFileInfo(res.data)
     }).catch(() => {
@@ -38,6 +38,7 @@ const Share: React.FC = () => {
   }
 
   const downloadShareFile = (callback: () => void) => {
+    const hashObject = queryURLParams(location.href)
     axios({
       url: 'api/file/share/download',
       method: 'post',
@@ -45,7 +46,7 @@ const Share: React.FC = () => {
       data: {
         fileId: fileInfo?.id,
         code: inputValue,
-        hash: location.href
+        hash: hashObject.f
       }
     }).then((res) => {
       const blob = res.data
@@ -56,7 +57,7 @@ const Share: React.FC = () => {
       reader.onload = function (e) {
         const a = document.createElement('a');
         // 获取文件名fileName
-        const fileName = fileInfo?.fileName
+        const fileName = fileInfo?.filename
         a.download = fileName!;
         a.href = e.target?.result as string;
         document.body.appendChild(a);
@@ -65,7 +66,7 @@ const Share: React.FC = () => {
         callback()
       }
     }).catch((err) => {
-      message.error(err)
+      message.error('提取码错误')
     })
   }
 
@@ -93,7 +94,7 @@ const Share: React.FC = () => {
     <div className={styles.shareBackground}>
       <div className={styles.shareContainer}>
         <div className={styles.header}>
-          <span>{fileInfo?.fileName}</span>
+          <span>{fileInfo?.filename}</span>
           <Button
             icon={<DownloadOutlined />}
             onClick={() => setModalVisible(true)}
@@ -104,7 +105,7 @@ const Share: React.FC = () => {
         <div className={styles.body}>
           <div style={{ textAlign: 'center' }}>
             <FileAddOutlined style={{ fontSize: '70px' }} />
-            <span style={{ marginTop: '8px', display: 'block' }}>{fileInfo?.fileName}</span>
+            <span style={{ marginTop: '8px', display: 'block' }}>{fileInfo?.filename}</span>
           </div>
 
         </div>

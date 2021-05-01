@@ -42,7 +42,7 @@ func InitRouter() *gin.Engine {
 		apiFileRouter.POST("/delete", api.DeleteFile)
 		apiFileRouter.POST("/share/add", api.ShareFile)
 		apiFileRouter.POST("/share/download", api.DownloadShareFile)
-		apiFileRouter.GET("/share/show", api.SharePass)
+		apiFileRouter.POST("/share/show", api.SharePass)
 	}
 
 	// 404 Handler
