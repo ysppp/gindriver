@@ -19,6 +19,11 @@ const config: IConfig = {
           component: '../pages/download',
           exact: true
         },
+        {
+          path: '/share',
+          component: '../pages/share',
+          exact: true
+        }
         // {
         //   path: 'downloadDocument',
         //   component: '../pages/download',
