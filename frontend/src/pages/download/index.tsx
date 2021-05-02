@@ -172,29 +172,30 @@ const DownLoad: React.FC = () => {
       })
     }).then(res => {
       const data = res.data
+      let clipboard = new clipBoard('.btn', {
+        text() {
+          return '链接: https://pan.baidu.com/s/1AoynAF4urtqc1YPcXzD-7Q 提取码: s7y7'
+        }
+      })
+      clipboard.on('success', () => {
+        message.success('复制成功')
+      })
+      clipboard.on('error', () => {
+        message.error('复制失败，请手动复制')
+      })
       Modal.info({
         title: '成功创建私密链接',
         content: (
           <>
-            <Input value={`${data.url}`} />
-          提取码<Input value={`${data.code}`} />
+            <Input value={`${data.url}`} style={{ marginBottom: '6px' }} />
+            <span>提取码</span>
+            <Input value={`${data.code}`} style={{ margin: '4px 0 10px' }} />
+            <Button className="btn" type="primary">复制链接及提取码</Button>
           </>
         ),
         closable: true,
-        okText: <Button id="btn">复制链接及提取码</Button>,
+        okText: "知道了",
         onOk() {
-          history.push("share?" + data.url.split("?")[1])
-          const clipboard = new clipBoard('#btn', {
-            text() {
-              return '链接: https://pan.baidu.com/s/1AoynAF4urtqc1YPcXzD-7Q 提取码: s7y7'
-            }
-          })
-          clipboard.on('success', () => {
-            message.success('复制成功')
-          })
-          clipboard.on('error', () => {
-            message.error('复制失败，请手动复制')
-          })
         }
       })
     }).catch(() => { })
@@ -225,24 +226,6 @@ const DownLoad: React.FC = () => {
       setData(formData)
     }).catch(() => { })
   }
-
-  useEffect(() => {
-    getFilesData()
-  }, [])
-
-  useEffect(() => {
-    onLoadUserFetch().then((username: string | null) => {
-      if (username === null) {
-        return invalidSessionJumpBack();
-      }
-      const newUploadData = cloneDeep(uploadData)
-      newUploadData.user = `User: ${username}`
-      newUploadData.jwt = localStorage.getItem("jwt")
-      newUploadData.uploadPerm = { disabled: false }
-      newUploadData.uploadHint = <p>Click or drag a file to this area to upload</p>
-      setUploadData(newUploadData)
-    });
-  }, [])
 
   const normFile = (e: { fileList: any; }) => {
     if (Array.isArray(e)) {
@@ -354,6 +337,24 @@ const DownLoad: React.FC = () => {
     getFilesData(currentFolderArrId[length - 2])
     setCurrentFolderArrId(currentFolderArrId.slice(0, length - 1))
   }
+
+  useEffect(() => {
+    getFilesData()
+  }, [])
+
+  useEffect(() => {
+    onLoadUserFetch().then((username: string | null) => {
+      if (username === null) {
+        return invalidSessionJumpBack();
+      }
+      const newUploadData = cloneDeep(uploadData)
+      newUploadData.user = `User: ${username}`
+      newUploadData.jwt = localStorage.getItem("jwt")
+      newUploadData.uploadPerm = { disabled: false }
+      newUploadData.uploadHint = <p>Click or drag a file to this area to upload</p>
+      setUploadData(newUploadData)
+    });
+  }, [])
 
   return (
     <div className={styles.container}>
