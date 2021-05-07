@@ -86,6 +86,19 @@
   background-color: #1890ff;
 }
 
+.popoverContent {
+  width: 50px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.popoverContent > span {
+  color: #09aaff;
+  width: 100%;
+  cursor: pointer;
+  text-align: center;
+}
+
 /* .contentRight {
   flex-grow: 1;
   display: flex;

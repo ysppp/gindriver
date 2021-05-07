@@ -3,13 +3,14 @@ import { history } from 'umi';
 import {
   Button, Table, Modal,
   Input, message, Form, Card,
-  Upload, Dropdown, Menu, Popconfirm
+  Upload, Dropdown, Popconfirm,
+  Popover
 } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import {
   UploadOutlined, FileAddOutlined,
   ShareAltOutlined, DownloadOutlined,
-  InboxOutlined
+  InboxOutlined, MoreOutlined, FolderOutlined
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import clipBoard from 'clipboard'
@@ -18,8 +19,9 @@ import axios from '../../utils/axios'
 import { getUserInfo, invalidSessionJumpBack } from '../../utils/user';
 import { webauthnLogout } from '../../utils/webauthn'
 import LeftMenu from '../../components/LeftMenu'
+import EditableCell from '../../components/editableCell'
+import IconFont from '../../components/icon'
 import styles from './index.css'
-import { Content } from 'antd/lib/layout/layout'
 
 interface IData {
   ParentFolderId: number
@@ -50,7 +52,29 @@ const DownLoad: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([])
   const [modalVisible, setModalVisible] = useState<boolean>(false)
   const [fileName, setFileName] = useState<string>('')
-  const [data, setData] = useState<IData[]>([])
+  const [data, setData] = useState<IData[]>([{
+    ParentFolderId: 1,
+    key: 2,
+    FileId: 3,
+    FileName: '测试',
+    Size: 10,
+    UploadTime: new Date().getTime(),
+    FolderId: 0,
+    FolderName: '',
+    time: new Date().getTime()
+  },
+  {
+    ParentFolderId: 10,
+    key: 20,
+    FileId: 0,
+    FileName: '文件夹1',
+    Size: 10,
+    UploadTime: new Date().getTime(),
+    FolderId: 30,
+    FolderName: '文件夹1',
+    time: new Date().getTime()
+  }
+  ])
   const [uploadData, setUploadData] = useState<IUploadData>({
     user: 'User',
     uploadPerm: { disabled: false },
@@ -60,6 +84,8 @@ const DownLoad: React.FC = () => {
   const [uploadModalVisible, setUploadModalVisible] = useState<boolean>(false)
   const [fileList, setFileList] = useState<{ originFileObj: Blob }[]>([])
   const [currentFolderArrId, setCurrentFolderArrId] = useState<number[]>([0])
+  const [editingKey, setEditingKey] = useState<number>();
+  const [renameValue, setRenameValue] = useState<string>('')
 
   const formRef = React.createRef<FormInstance>();
   const columns = [
@@ -67,13 +93,18 @@ const DownLoad: React.FC = () => {
       title: 'Name',
       dataIndex: 'FileName',
       width: 200,
+      editable: true,
+      onCell: (record: IData) => ({
+        editing: record.key === editingKey,
+        nameValue: renameValue,
+        renameInputOnChange: renameInputOnChange,
+        cancelRename: cancelRename,
+        confirmRename: () => { confirmRename(record) }
+      }),
       render: (text: string, record: IData) => {
         return (
-          <a onClick={() => { getFileByFileFolder(record) }}>
-            <img
-              src="http://cdn.blogleeee.com/folder.png"
-              style={{ marginRight: '6px' }}
-            />
+          <a onClick={() => { getFileByFileFolder(record) }} style={{ display: 'flex', alignItems: 'center' }}>
+            <IconFont type={record.FolderName ? "icon-folder" : 'icon-file'} style={{ fontSize: '25px', marginRight: '3px' }} />
             {text}
           </a>
         )
@@ -92,37 +123,133 @@ const DownLoad: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: "space-between" }}>
           <span>{dayjs(date).format('YYYY-MM-DD HH:mm:ss')}</span>
           <span style={{ marginRight: '60%' }} className={styles.iconSpan}>
-            <Popconfirm
-              title={`是否要分享文件${record.FileName}？`}
-              onConfirm={() => {
-                shareFile(record)
-              }}
-              onCancel={() => { }}
-              okText="Yes"
-              cancelText="No"
-            >
-              <ShareAltOutlined
-                style={{ color: '#1890ff', fontSize: '16px', marginRight: '10px', cursor: "pointer" }}
-              />
-            </Popconfirm>
+            {
+              record.FileId ?
+                <>
+                  <Popconfirm
+                    title={`是否要分享文件${record.FileName}？`}
+                    onConfirm={() => {
+                      shareFile(record)
+                    }}
+                    onCancel={() => { }}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <ShareAltOutlined
+                      style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer" }}
+                    />
+                  </Popconfirm>
 
-            <Popconfirm
-              title={`确定要下载${record.FileName}吗？`}
-              onConfirm={() => {
-                downloadFile(record)
-              }}
-              onCancel={() => { }}
-              okText="Yes"
-              cancelText="No"
-            >
-              <DownloadOutlined style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer" }} />
-            </Popconfirm>
+                  <Popconfirm
+                    title={`确定要下载${record.FileName}吗？`}
+                    onConfirm={() => {
+                      downloadFile(record)
+                    }}
+                    onCancel={() => { }}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <DownloadOutlined style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer", marginLeft: '10px' }} />
+                  </Popconfirm>
+                  <Popover
+                    content={
+                      <div className={styles.popoverContent}>
+                        <span>移动到</span>
+                        <span onClick={() => renameFileOrFolder(record)} style={{ margin: '4px 0' }}>重命名</span>
+                        <span onClick={() => { deleteFile(record) }}>删除</span>
+                      </div>
+                    }
+                  >
 
+                    <MoreOutlined style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer", transform: "rotateZ(90deg)", marginLeft: '10px' }} />
+                  </Popover>
+                </>
+                :
+                <span style={{marginRight: '25px'}}>
+                  <IconFont
+                    type="icon-icon_rename"
+                    style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer", marginRight: '10px' }}
+                    onClick={() => renameFileOrFolder(record)}  
+                  />
+                  <Popconfirm
+                    title={`确定要删除${record.FolderName}吗？`}
+                    onConfirm={() => {
+                      deleteFolder(record)
+                    }}
+                    onCancel={() => { }}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <IconFont type="icon-delete" style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer" }}/>
+                  </Popconfirm>
+                </span>
+            }
           </span>
         </div>
       )
     },
   ];
+
+  const renameInputOnChange = (e: any) => {
+    setRenameValue(e.target.value)
+  }
+
+  const renameFileOrFolder = (record: IData) => {
+    setEditingKey(record.key)
+    setRenameValue(record.FileName || record.FolderName)
+  }
+
+  const cancelRename = () => {
+    setEditingKey(undefined)
+  }
+
+  // 这里需要判断一下是修改文件还是文件夹
+  const confirmRename = (record: IData) => {
+    if (renameValue === record.FileName) {
+      setEditingKey(undefined)
+      return
+    }
+    axios({
+      url: 'api/file/folder/update',
+      method: 'post',
+      data: {
+        FileFolderName: renameValue,
+        FolderId: record.FolderId
+      }
+    }).then((res) => {
+      setEditingKey(undefined)
+      getFilesData(currentFolderArrId[currentFolderArrId.length - 1], () => { message.success('修改成功') })
+    }).catch(() => { })
+
+  }
+
+  const deleteFile = (record: IData) => {
+    const newData = data.filter((item: IData) => {
+      return record.key !== item.key
+    })
+    axios({
+      url: 'api/file/',
+      method: 'post',
+      data: {}
+    }).then((res) => {
+      setData(newData)
+      message.success('删除成功')
+    }).catch(() => { })
+  }
+
+  const deleteFolder = (record: IData) => {
+    const newData = data.filter((item: IData) => {
+      return record.key !== item.key
+    })
+    axios({
+      url: 'api/file/',
+      method: 'post',
+      data: {}
+    }).then((res) => {
+      setData(newData)
+      message.success('删除成功')
+    }).catch(() => { })
+  }
 
   const getFileByFileFolder = (record: IData) => {
     if (record.FileId) return
@@ -174,7 +301,7 @@ const DownLoad: React.FC = () => {
       const data = res.data
       let clipboard = new clipBoard('.btn', {
         text() {
-          return '链接: https://pan.baidu.com/s/1AoynAF4urtqc1YPcXzD-7Q 提取码: s7y7'
+          return `链接: ${data.url} 提取码: ${data.code}`
         }
       })
       clipboard.on('success', () => {
@@ -201,7 +328,7 @@ const DownLoad: React.FC = () => {
     }).catch(() => { })
   }
 
-  const getFilesData = (folderId?: number) => {
+  const getFilesData = (folderId?: number, callback?: () => void) => {
     let url = '/api/file/getAll'
     if (folderId) {
       url = url + `?fId=${folderId}`
@@ -210,6 +337,9 @@ const DownLoad: React.FC = () => {
       url,
       method: 'get'
     }).then(res => {
+      if (callback) {
+        callback()
+      }
       const { fileFolders, files } = res.data
       // 将文件夹和文件整合到一个数组当中
       const newFileFolders = fileFolders.map((item: IData) => {
@@ -224,6 +354,7 @@ const DownLoad: React.FC = () => {
         return item
       }))
       setData(formData)
+
     }).catch(() => { })
   }
 
@@ -404,18 +535,21 @@ const DownLoad: React.FC = () => {
         </div>
         <div className={styles.contentBody}>
           <Table
+            components={data.length ? {
+              body: {
+                cell: EditableCell
+              }
+            } : {}}
             onRow={(record: IData) => ({
               onMouseEnter(e: any) {
-                if (record.FolderId) return
                 e.target.parentNode.classList.add(styles.visible)
               },
               onMouseLeave(e: any) {
-                if (record.FolderId) return
                 e.target.parentNode.classList.remove(styles.visible)
               }
             })}
             rowSelection={{ selectedRowKeys, onChange: onSelectChange }}
-            columns={columns}
+            columns={columns as any}
             dataSource={data}
             tableLayout="fixed"
           />

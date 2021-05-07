@@ -1,6 +1,6 @@
 import React from 'react'
-import { Link } from 'umi'
 import { withRouter } from 'react-router'
+import { RouteComponentProps } from 'react-router-dom'
 import { Menu } from 'antd';
 import {
   FileImageOutlined,
@@ -13,8 +13,6 @@ import { Type } from '../../pages/download'
 import './index.css'
 
 interface IProps {
-  history: any,
-  location: any,
   changeType: (type: Type) => void
 }
 
@@ -23,8 +21,8 @@ interface IState {
   selectedKeys: string[]
 }
 
-class LeftMenu extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
+class LeftMenu extends React.Component<IProps & RouteComponentProps, IState> {
+  constructor(props: IProps & RouteComponentProps) {
     super(props)
     this.state = {
       collapsed: false,
@@ -124,4 +122,4 @@ class LeftMenu extends React.Component<IProps, IState> {
   }
 }
 
-export default withRouter(LeftMenu as any)
+export default withRouter(LeftMenu)
