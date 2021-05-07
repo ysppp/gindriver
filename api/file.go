@@ -7,8 +7,10 @@ import (
 	"gindriver/models"
 	"gindriver/utils"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 )
 
@@ -164,7 +166,7 @@ func UploadHandler(c *gin.Context) {
 		location := config.Config.UploadLocation + file.Filename
 		fmt.Println(location)
 		//newFile, err := os.Create(location)
-		//在本地创建一个新的文件
+
 		err = c.SaveUploadedFile(file, location)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
@@ -180,7 +182,20 @@ func UploadHandler(c *gin.Context) {
 		//通过hash判断文件是否已上传过oss
 		if ok := models.FileOssExists(fileHash); ok {
 			//上传至阿里云oss
-			go lib.UploadOss(f.Name(), fileHash)
+			lib.UploadOss(f.Name(), fileHash)
+
+			fileSuffix := path.Ext(file.Filename)
+			if utils.GetFileTypeInt(fileSuffix) == 2 {
+				lib.ProcessHeic(fileHash, fileSuffix)
+				filedata := lib.DownloadOss(fileHash, fileSuffix, false)
+				err = ioutil.WriteFile(location, filedata, 0644)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, utils.ErrorWrapper(err))
+					fmt.Println("文件创建失败", err.Error())
+					return
+				}
+			}
+
 			//新建文件信息
 			models.CreateFile(file.Filename, f.Name(), fileHash, file.Size, folderId, user.FileStoreId)
 			//上传成功减去相应剩余容量

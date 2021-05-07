@@ -39,12 +39,13 @@ func InitRouter() *gin.Engine {
 		apiFileRouter.POST("/folder/update", api.UpdateFileFolder)
 		apiFileRouter.GET("/getAll", api.GetAllFiles)
 		apiFileRouter.POST("/upload", api.UploadHandler)
+		apiFileRouter.POST("/update", api.UpdateFile)
 		apiFileRouter.POST("/delete", api.DeleteFile)
 		apiFileRouter.POST("/share/add", api.ShareFile)
 		apiFileRouter.POST("/share/download", api.DownloadShareFile)
 		apiFileRouter.POST("/share/show", api.SharePass)
 	}
-
+	app.GET("/api/files", api.GetFilesByType)
 	// 404 Handler
 	app.NoRoute(NoRouterHandler)
 

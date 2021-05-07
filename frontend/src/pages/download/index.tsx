@@ -44,8 +44,10 @@ interface IUploadData {
 
 export enum Type {
   all = 0,
-  picture = 1,
-  video = 2
+  text = 1,
+  picture = 2,
+  video = 3,
+  music
 }
 
 const DownLoad: React.FC = () => {
@@ -169,7 +171,7 @@ const DownLoad: React.FC = () => {
                   <IconFont
                     type="icon-icon_rename"
                     style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer", marginRight: '10px' }}
-                    onClick={() => renameFileOrFolder(record)}  
+                    onClick={() => renameFileOrFolder(record)}
                   />
                   <Popconfirm
                     title={`确定要删除${record.FolderName}吗？`}
@@ -228,9 +230,12 @@ const DownLoad: React.FC = () => {
       return record.key !== item.key
     })
     axios({
-      url: 'api/file/',
+      url: 'api/file/delete',
       method: 'post',
-      data: {}
+      data: JSON.stringify({
+        fId: record.FileId,
+        parentFolderId: record.ParentFolderId
+      })
     }).then((res) => {
       setData(newData)
       message.success('删除成功')
@@ -384,7 +389,7 @@ const DownLoad: React.FC = () => {
   }
 
   const changeType = (type: Type) => {
-    axios.get(`/files?type=${type}`).then(res => {
+    axios.get(`/api/files?type=${type}`).then(res => {
       setData(res.data)
     }).catch(() => { })
   }

@@ -92,5 +92,5 @@ func DeleteFileFolder(folderId uint64) bool {
 //修改文件夹名
 func UpdateFolderName(fId uint64, fName string) {
 	var fileFolder FileFolder
-	utils.Database.Model(&fileFolder).Where("FolderId=?", fId).Update("FileFolderName", fName)
+	utils.Database.Model(&fileFolder).Where("FolderId=?", fId).Update("FolderName", fName)
 }

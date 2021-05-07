@@ -56,6 +56,40 @@ type structOfJson struct {
 	ParentFolderId uint64 `json:"parentFolderId"`
 	FileId         uint64 `json:"fId"`
 	FolderId       uint64 `json:"folderId"`
+	FileName       string `json:"fileName"`
+}
+
+func GetFilesByType(c *gin.Context) {
+	username, ret := c.Get("SessionUser")
+	if !ret {
+		c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("not authorized")))
+		return
+	}
+	//获取用户信息
+	user := models.GetUserInfoByName(username)
+
+	var Files []models.File
+
+	fileType := c.Query("type")
+	switch fileType {
+	case "1":
+		Files = models.GetTypeFile(1, user.FileStoreId)
+	case "2":
+		Files = models.GetTypeFile(2, user.FileStoreId)
+	case "3":
+		Files = models.GetTypeFile(3, user.FileStoreId)
+	case "4":
+		Files = models.GetTypeFile(4, user.FileStoreId)
+	}
+
+	fileDetailUse := models.GetFileDetailUse(user.FileStoreId)
+
+	c.JSON(http.StatusOK, gin.H{
+		"currAll":       "active",
+		"user":          user,
+		"files":         Files,
+		"fileDetailUse": fileDetailUse,
+	})
 }
 
 //处理新建文件夹
@@ -98,13 +132,25 @@ func DownloadFile(c *gin.Context) {
 	}
 
 	//从oss获取文件
-	fileData := lib.DownloadOss(file.FileHash, file.PostFix)
+	fileData := lib.DownloadOss(file.FileHash, file.PostFix, true)
 	//下载次数+1
 	//models.DownloadNumAdd(fId)
 
 	c.Header("Content-disposition", "attachment;filename=\""+file.FileName+file.PostFix+"\"")
 	c.Header("Content-Transfer-Encoding", "binary")
 	c.Data(http.StatusOK, "application/octect-stream", fileData)
+}
+
+func UpdateFile(c *gin.Context) {
+	json := structOfJson{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+	}
+	fileId := json.FileId
+	fileName := json.FileName
+	models.UpdateUserFile(fileId, fileName)
 }
 
 //删除文件

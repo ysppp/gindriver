@@ -1,6 +1,9 @@
 package models
 
 import (
+	"fmt"
+	"gindriver/lib"
+
 	//"crypto/rand"
 	//"encoding/binary"
 	//"fmt"
@@ -157,6 +160,14 @@ func GetFileInfo(fId uint64) (file File) {
 }
 
 //删除数据库文件数据
-func DeleteUserFile(folderId, fId, storeId uint64) {
+func DeleteUserFile(fId, folderId, storeId uint64) {
+	fmt.Printf("FileId = %d and FileStoreId = %d and ParentFolderId = %d", fId, storeId, folderId)
+	file := GetFileInfo(fId)
+	lib.DeleteOss(file.FileHash, file.PostFix)
 	utils.Database.Where("FileId = ? and FileStoreId = ? and ParentFolderId = ?", fId, storeId, folderId).Delete(File{})
+}
+
+func UpdateUserFile(fileId uint64, fileName string) {
+	var File File
+	utils.Database.Model(&File).Where("FileId=?", fileId).Update("FileName", fileName)
 }
