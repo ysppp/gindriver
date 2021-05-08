@@ -15,7 +15,7 @@ type FileFolder struct {
 }
 
 //新建文件夹
-func CreateFolder(folderName string, parentId, fileStoreId uint64) {
+func CreateFolder(folderName string, parentId, fileStoreId uint64) uint64 {
 	fileFolder := FileFolder{
 		FolderId:       uint64(randomUint64()),
 		FolderName:     folderName,
@@ -24,6 +24,7 @@ func CreateFolder(folderName string, parentId, fileStoreId uint64) {
 		Time:           time.Now().Format("2006-01-02 15:04:05"),
 	}
 	utils.Database.Create(&fileFolder)
+	return fileFolder.FolderId
 }
 
 //获取父类的id
@@ -36,6 +37,15 @@ func GetParentFolder(fId uint64) (fileFolder FileFolder) {
 func GetFileFolder(parentId, fileStoreId uint64) (fileFolders []FileFolder) {
 	utils.Database.Order("time desc").Find(&fileFolders, "ParentFolderId=? and FileStoreId=?", parentId, fileStoreId)
 	return
+}
+
+func IsFolderNameOK(parentId, fileStoreId uint64, folderName string) (flag bool) {
+	var folder FileFolder
+	utils.Database.Find(&folder, "folderName=? and parentFolderId=? and fileStoreId=?", folderName, parentId, fileStoreId)
+	if folder.FolderId >= 0 {
+		return false
+	}
+	return true
 }
 
 //获取当前的目录信息
@@ -93,4 +103,9 @@ func DeleteFileFolder(folderId uint64) bool {
 func UpdateFolderName(fId uint64, fName string) {
 	var fileFolder FileFolder
 	utils.Database.Model(&fileFolder).Where("FolderId=?", fId).Update("FolderName", fName)
+}
+
+func MoveFolder(fromFolderId, toFolderId uint64) {
+	var folder FileFolder
+	utils.Database.Model(&folder).Where("foldId=?", fromFolderId).Update("parentFolderId", toFolderId)
 }

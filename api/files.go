@@ -57,6 +57,7 @@ type structOfJson struct {
 	FileId         uint64 `json:"fId"`
 	FolderId       uint64 `json:"folderId"`
 	FileName       string `json:"fileName"`
+	ToFolderId     uint64 `json:"toFolderId"`
 }
 
 func GetFilesByType(c *gin.Context) {
@@ -112,6 +113,10 @@ func AddFolder(c *gin.Context) {
 	folderName := json.FileFolderName
 	parentId := json.ParentFolderId
 
+	if !models.IsFolderNameOK(parentId, user.FileStoreId, folderName) {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("folder name exists!")))
+		return
+	}
 	//新建文件夹数据
 	models.CreateFolder(folderName, parentId, user.FileStoreId)
 }
@@ -201,6 +206,42 @@ func UpdateFileFolder(c *gin.Context) {
 	}
 	fileFolderName := json.FileFolderName
 	fileFolderId := json.FolderId
-
+	folder := models.GetCurrentFolder(fileFolderId)
+	if !models.IsFolderNameOK(folder.ParentFolderId, folder.FileStoreId, fileFolderName) {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("folder name exists!")))
+		return
+	}
 	models.UpdateFolderName(fileFolderId, fileFolderName)
+}
+
+func MoveFile(c *gin.Context) {
+	json := structOfJson{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+	}
+
+	fileId := json.FileId
+	foldId := json.FolderId
+
+	models.MoveUserFile(fileId, foldId)
+}
+
+func MoveFolder(c *gin.Context) {
+	json := structOfJson{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+	}
+
+	toFolderId := json.ToFolderId
+	folderId := json.FolderId
+	folder := models.GetCurrentFolder(folderId)
+	if !models.IsFolderNameOK(toFolderId, folder.FileStoreId, folder.FolderName) {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("目标文件夹存在同名文件夹！")))
+		return
+	}
+	models.MoveFolder(folderId, toFolderId)
 }

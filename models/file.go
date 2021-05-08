@@ -171,3 +171,8 @@ func UpdateUserFile(fileId uint64, fileName string) {
 	var File File
 	utils.Database.Model(&File).Where("FileId=?", fileId).Update("FileName", fileName)
 }
+
+func MoveUserFile(fileId, folderId uint64) {
+	var File File
+	utils.Database.Model(&File).Where("FileId=?", fileId).Update("ParentFolderId", folderId)
+}
