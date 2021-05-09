@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"gindriver/utils"
 	"time"
 )
@@ -33,6 +34,11 @@ func GetParentFolder(fId uint64) (fileFolder FileFolder) {
 	return
 }
 
+func GetAllFolder(fileStoreId uint64) (fileFolders []FileFolder) {
+	utils.Database.Order("time desc").Find(&fileFolders, "and FileStoreId=?", fileStoreId)
+	return
+}
+
 //获取目录所有文件夹
 func GetFileFolder(parentId, fileStoreId uint64) (fileFolders []FileFolder) {
 	utils.Database.Order("time desc").Find(&fileFolders, "ParentFolderId=? and FileStoreId=?", parentId, fileStoreId)
@@ -42,7 +48,8 @@ func GetFileFolder(parentId, fileStoreId uint64) (fileFolders []FileFolder) {
 func IsFolderNameOK(parentId, fileStoreId uint64, folderName string) (flag bool) {
 	var folder FileFolder
 	utils.Database.Find(&folder, "folderName=? and parentFolderId=? and fileStoreId=?", folderName, parentId, fileStoreId)
-	if folder.FolderId >= 0 {
+	fmt.Printf("folderId: %d", folder.FolderId)
+	if folder.FolderId > 0 {
 		return false
 	}
 	return true
@@ -81,19 +88,22 @@ func GetUserFileFolderCount(fileStoreId uint64) (fileFolderCount int64) {
 
 //删除文件夹信息
 func DeleteFileFolder(folderId uint64) bool {
-	var fileFolder FileFolder
+	var fileFolder []FileFolder
 	var fileFolder2 FileFolder
+	fmt.Printf("folderId: %d\n", folderId)
 	//删除文件夹信息
 	utils.Database.Where("FolderId=?", folderId).Delete(FileFolder{})
 	//删除文件夹中文件信息
 	utils.Database.Where("ParentFolderId=?", folderId).Delete(File{})
+
 	//删除文件夹中文件夹信息
 	utils.Database.Find(&fileFolder, "ParentFolderId=?", folderId)
-	utils.Database.Where("ParentFolderId=?", folderId).Delete(FileFolder{})
+	//utils.Database.Where("ParentFolderId=?", folderId).Delete(FileFolder{})
 
-	utils.Database.Find(&fileFolder2, "ParentFolderId=?", fileFolder.FolderId)
-	if fileFolder2.FolderId != 0 { //递归删除文件下的文件夹
-		return DeleteFileFolder(fileFolder.FolderId)
+	for _, folder := range fileFolder {
+		if fileFolder2.FolderId != 0 { //递归删除文件下的文件夹
+			return DeleteFileFolder(folder.FolderId)
+		}
 	}
 
 	return true

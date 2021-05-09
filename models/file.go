@@ -123,7 +123,7 @@ func GetFileDetailUse(fileStoreId uint64) map[string]int64 {
 
 //根据文件类型获取文件
 func GetTypeFile(fileType, fileStoreId uint64) (files []File) {
-	utils.Database.Find(&files, "FileStoreId = ? and Type = ?", fileStoreId, fileType)
+	utils.Database.Find(&files, "FileStoreId=? and Type=?", fileStoreId, fileType)
 	return
 }
 
@@ -144,10 +144,10 @@ func CurrFileExists(folderId uint64, filename string) bool {
 }
 
 //通过hash判断文件是否已上传过oss
-func FileOssExists(fileHash string) bool {
+func FileOssExists(fileHash string, folderId uint64) bool {
 	var file File
-	utils.Database.Find(&file, "FileHash = ?", fileHash)
-	if file.FileHash != "" {
+	utils.Database.Find(&file, "FileHash = ? and parentFolderId = ?", fileHash, folderId)
+	if file.FileId != 0 {
 		return false
 	}
 	return true

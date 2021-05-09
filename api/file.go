@@ -180,7 +180,7 @@ func UploadHandler(c *gin.Context) {
 		defer f.Close()
 
 		//通过hash判断文件是否已上传过oss
-		if ok := models.FileOssExists(fileHash); ok {
+		if models.FileOssExists(fileHash, folderId) {
 			//上传至阿里云oss
 			lib.UploadOss(f.Name(), fileHash)
 
@@ -200,6 +200,9 @@ func UploadHandler(c *gin.Context) {
 			models.CreateFile(file.Filename, f.Name(), fileHash, file.Size, folderId, user.FileStoreId)
 			//上传成功减去相应剩余容量
 			models.SubtractSize(file.Size/1024, user.FileStoreId)
+		} else {
+			c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("file exists.")))
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,

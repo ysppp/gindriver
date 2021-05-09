@@ -214,6 +214,43 @@ func UpdateFileFolder(c *gin.Context) {
 	models.UpdateFolderName(fileFolderId, fileFolderName)
 }
 
+func GetAllFolders(c *gin.Context) {
+	username, ret := c.Get("SessionUser")
+	if !ret {
+		c.JSON(http.StatusUnauthorized, utils.ErrorWrapper(fmt.Errorf("not authorized")))
+		return
+	}
+	//获取用户信息
+	user := models.GetUserInfoByName(username)
+	json := structOfJson{}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"error": err.Error()})
+	}
+	folderId := json.FolderId
+	//var allFolders []structOfFolders
+	//var folder models.FileFolder
+	var sonFolders []struct {
+		sonFoldersId   uint64
+		sonFoldersName string
+	}
+	var sonFolder struct {
+		sonFoldersId   uint64
+		sonFoldersName string
+	}
+	folders := models.GetFileFolder(folderId, user.FileStoreId)
+	for _, folder := range folders {
+		sonFolder.sonFoldersId = folder.FolderId
+		sonFolder.sonFoldersName = folder.FolderName
+		sonFolders = append(sonFolders, sonFolder)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"folders": sonFolders,
+	})
+}
+
 func MoveFile(c *gin.Context) {
 	json := structOfJson{}
 	if err := c.ShouldBindJSON(&json); err != nil {

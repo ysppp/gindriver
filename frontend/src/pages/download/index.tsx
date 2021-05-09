@@ -54,29 +54,7 @@ const DownLoad: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([])
   const [modalVisible, setModalVisible] = useState<boolean>(false)
   const [fileName, setFileName] = useState<string>('')
-  const [data, setData] = useState<IData[]>([{
-    ParentFolderId: 1,
-    key: 2,
-    FileId: 3,
-    FileName: '测试',
-    Size: 10,
-    UploadTime: new Date().getTime(),
-    FolderId: 0,
-    FolderName: '',
-    time: new Date().getTime()
-  },
-  {
-    ParentFolderId: 10,
-    key: 20,
-    FileId: 0,
-    FileName: '文件夹1',
-    Size: 10,
-    UploadTime: new Date().getTime(),
-    FolderId: 30,
-    FolderName: '文件夹1',
-    time: new Date().getTime()
-  }
-  ])
+  const [data, setData] = useState<IData[]>([])
   const [uploadData, setUploadData] = useState<IUploadData>({
     user: 'User',
     uploadPerm: { disabled: false },
@@ -211,13 +189,21 @@ const DownLoad: React.FC = () => {
       setEditingKey(undefined)
       return
     }
+    let url = ""
+    let data = {}
+    if (record.FolderId) {
+      url = 'api/file/folder/update'
+      data.FileFolderName = renameValue
+      data.FolderId = record.FolderId
+    } else {
+      url = 'api/file/update'
+      data.fId = record.FileId
+      data.fileName = renameValue
+    }
     axios({
-      url: 'api/file/folder/update',
+      url,
       method: 'post',
-      data: {
-        FileFolderName: renameValue,
-        FolderId: record.FolderId
-      }
+      data
     }).then((res) => {
       setEditingKey(undefined)
       getFilesData(currentFolderArrId[currentFolderArrId.length - 1], () => { message.success('修改成功') })
@@ -247,9 +233,11 @@ const DownLoad: React.FC = () => {
       return record.key !== item.key
     })
     axios({
-      url: 'api/file/',
+      url: 'api/file/folder/delete',
       method: 'post',
-      data: {}
+      data: {
+        folderId: record.FolderId
+      }
     }).then((res) => {
       setData(newData)
       message.success('删除成功')
@@ -389,8 +377,17 @@ const DownLoad: React.FC = () => {
   }
 
   const changeType = (type: Type) => {
+    if (type === 0) {
+      getFilesData()
+      return
+    }
     axios.get(`/api/files?type=${type}`).then(res => {
-      setData(res.data)
+      const filesData = res.data.files
+      const formData = filesData.map((item: IData) => {
+        item.key = item.FileId
+        return item
+      })
+      setData(formData)
     }).catch(() => { })
   }
 
