@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { history } from 'umi';
 import {
   Button, Table, Modal,
   Input, message, Form, Card,
   Upload, Dropdown, Popconfirm,
-  Popover
+  Popover, Tree
 } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import {
   UploadOutlined, FileAddOutlined,
   ShareAltOutlined, DownloadOutlined,
-  InboxOutlined, MoreOutlined, FolderOutlined
+  InboxOutlined, MoreOutlined, CarryOutOutlined, HeartFilled
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import clipBoard from 'clipboard'
@@ -42,6 +42,15 @@ interface IUploadData {
   jwt: null | string
 }
 
+interface ITreeData {
+  title: string
+  key: number
+  icon: React.ReactElement,
+  children?: ITreeData[]
+  sonFoldersId?: number
+  sonFoldersName?: string
+}
+
 export enum Type {
   all = 0,
   text = 1,
@@ -54,7 +63,29 @@ const DownLoad: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([])
   const [modalVisible, setModalVisible] = useState<boolean>(false)
   const [fileName, setFileName] = useState<string>('')
-  const [data, setData] = useState<IData[]>([])
+  const [treeData, setTreeData] = useState<ITreeData[]>([])
+  const [data, setData] = useState<IData[]>([{
+    ParentFolderId: 1,
+    key: 2,
+    FileId: 3,
+    FileName: '测试',
+    Size: 10,
+    UploadTime: new Date().getTime(),
+    FolderId: 0,
+    FolderName: '',
+    time: new Date().getTime()
+  },
+  {
+    ParentFolderId: 10,
+    key: 20,
+    FileId: 0,
+    FileName: '文件夹1',
+    Size: 10,
+    UploadTime: new Date().getTime(),
+    FolderId: 30,
+    FolderName: '文件夹1',
+    time: new Date().getTime()
+  }])
   const [uploadData, setUploadData] = useState<IUploadData>({
     user: 'User',
     uploadPerm: { disabled: false },
@@ -66,6 +97,9 @@ const DownLoad: React.FC = () => {
   const [currentFolderArrId, setCurrentFolderArrId] = useState<number[]>([0])
   const [editingKey, setEditingKey] = useState<number>();
   const [renameValue, setRenameValue] = useState<string>('')
+  const [modalMoveVisible, setModalMoveVisible] = useState<boolean>(false)
+  const [currentMoveRecord, setCurrentMoveRecord] = useState<IData>()
+  const [currentToMoveRecordId, setCurrentToMoveRecordId] = useState<number>()
 
   const formRef = React.createRef<FormInstance>();
   const columns = [
@@ -134,7 +168,7 @@ const DownLoad: React.FC = () => {
                   <Popover
                     content={
                       <div className={styles.popoverContent}>
-                        <span>移动到</span>
+                        <span onClick={() => {fileMove(record)}}>移动到</span>
                         <span onClick={() => renameFileOrFolder(record)} style={{ margin: '4px 0' }}>重命名</span>
                         <span onClick={() => { deleteFile(record) }}>删除</span>
                       </div>
@@ -145,7 +179,7 @@ const DownLoad: React.FC = () => {
                   </Popover>
                 </>
                 :
-                <span style={{marginRight: '25px'}}>
+                <>
                   <IconFont
                     type="icon-icon_rename"
                     style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer", marginRight: '10px' }}
@@ -160,15 +194,34 @@ const DownLoad: React.FC = () => {
                     okText="Yes"
                     cancelText="No"
                   >
-                    <IconFont type="icon-delete" style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer" }}/>
+                    <IconFont type="icon-delete" style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer", marginRight: '10px' }} />
                   </Popconfirm>
-                </span>
+                  <Popover
+                    content={
+                      <div className={styles.popoverContent}>
+                        <span onClick={() => folderMove(record)}>移动到</span>
+                      </div>
+                    }
+                  >
+
+                    <MoreOutlined style={{ color: '#1890ff', fontSize: '16px', cursor: "pointer", transform: "rotateZ(90deg)" }} />
+                  </Popover>
+                </>
             }
           </span>
         </div>
       )
     },
   ];
+
+  const switcherIcon = (
+    <div
+      className="makeParentNoCursor"
+      onClick={e => e.stopPropagation()}
+      style={{ height: '100%' }}>
+    </div>
+  )
+
 
   const renameInputOnChange = (e: any) => {
     setRenameValue(e.target.value)
@@ -190,7 +243,7 @@ const DownLoad: React.FC = () => {
       return
     }
     let url = ""
-    let data = {}
+    let data: any = {}
     if (record.FolderId) {
       url = 'api/file/folder/update'
       data.FileFolderName = renameValue
@@ -242,6 +295,58 @@ const DownLoad: React.FC = () => {
       setData(newData)
       message.success('删除成功')
     }).catch(() => { })
+  }
+
+  const fileMove = (record: IData) => {
+    axios({
+      url: 'api/file/folder/getSon',
+      method: 'post',
+      data: {
+        FolderId: 0
+      }
+    }).then(res => {
+      const formalData = res.data.map((item: any) => {
+        item.title = item.sonFoldersName
+        item.key = item.sonFoldersId
+        item.icon = <IconFont type="icon-folder" />
+        return item
+      })
+      // const formalData = [
+      //   { title: '文件夹1', key: 1, icon: <IconFont type="icon-folder" /> },
+      //   { title: '文件夹2', key: 2, icon: <IconFont type="icon-folder" /> },
+      // ]
+      setCurrentMoveRecord(record)
+      setTreeData(formalData)
+      setModalMoveVisible(true)
+    }).catch(() => {
+
+    })
+  }
+
+  const folderMove = (record: IData) => {
+    axios({
+      url: 'api/file/folder/getSon',
+      method: 'post',
+      data: {
+        FolderId: record.FolderId
+      }
+    }).then(res => {
+      const formalData = res.data.map((item: any) => {
+        item.title = item.sonFoldersName
+        item.key = item.sonFoldersId
+        item.icon = <IconFont type="icon-folder" />
+        return item
+      })
+      // const formalData = [
+      //   { title: '文件夹1', key: 1, icon: <IconFont type="icon-folder" /> },
+      //   { title: '文件夹2', key: 2, icon: <IconFont type="icon-folder" /> },
+      // ]
+      setCurrentMoveRecord(record)
+      setTreeData(formalData)
+      setModalMoveVisible(true)
+    }).catch(() => {
+
+    })
   }
 
   const getFileByFileFolder = (record: IData) => {
@@ -471,6 +576,97 @@ const DownLoad: React.FC = () => {
     setCurrentFolderArrId(currentFolderArrId.slice(0, length - 1))
   }
 
+  const moveFolder = () => {
+    axios({
+      url: 'api/file/folder/move',
+      method: 'post',
+      data: {
+        ToFolderId: currentToMoveRecordId,
+        FolderId: currentMoveRecord?.FolderId
+      }
+    }).then(() => {
+      message.success('移动成功')
+      setModalMoveVisible(false)
+    })
+  }
+
+  const moveFile = () => {
+    axios({
+      url: 'api/file/move',
+      method: 'post',
+      data: {
+        FileId: currentToMoveRecordId,
+        FolderId: currentMoveRecord?.FolderId
+      }
+    }).then(() => {
+      message.success('移动成功')
+      setModalMoveVisible(false)
+    })
+  }
+
+  const modalMoveCancel = () => {
+    setModalMoveVisible(false)
+  }
+
+  const modalMoveOk = () => {
+    setModalMoveVisible(false)
+    if (currentMoveRecord?.FolderId) {
+      moveFolder()
+    } else {
+      moveFile()
+    }
+  }
+
+  function updateTreeData(list: ITreeData[], key: React.Key, children: ITreeData[]): ITreeData[] {
+    return list.map(node => {
+      if (node.key === key) {
+        return {
+          ...node,
+          children,
+        };
+      }
+      if (node.children) {
+        return {
+          ...node,
+          children: updateTreeData(node.children, key, children),
+        };
+      }
+      return node;
+    });
+  }
+
+  const onLoadTreeData = (obj: any) => {
+    const { children, key } = obj
+    return new Promise<void>(resolve => {
+      if (children) {
+        resolve();
+        return;
+      }
+      axios({
+        url: 'api/file/folder/getSon',
+        method: 'post',
+        data: {
+          FolderId: key
+        }
+      }).then((res) => {
+        const formalData = res.data.map((item: any) => {
+          item.title = item.sonFoldersName
+          item.key = item.sonFoldersId
+          item.icon = <IconFont type="icon-folder" />
+          return item
+        })
+        setTreeData(origin => updateTreeData(origin, key, formalData))
+      }).catch(() => {
+
+      })
+      resolve()
+    })
+  }
+
+  const treeDataSelect = (key: React.Key[], info: any) => {
+    setCurrentToMoveRecordId(key[0] as number)
+  }
+
   useEffect(() => {
     getFilesData()
   }, [])
@@ -488,6 +684,16 @@ const DownLoad: React.FC = () => {
       setUploadData(newUploadData)
     });
   }, [])
+
+  useLayoutEffect(() => {
+    setTimeout(() => {
+      const divEle = document.getElementsByClassName('makeParentNoCursor')
+      const divEleArr = Array.prototype.slice.call(divEle, 0)
+      divEleArr.forEach((ele: any) => {
+        ele.parentNode.style.cursor = 'auto'
+      })
+    }, 500)
+  }, [treeData])
 
   return (
     <div className={styles.container}>
@@ -556,6 +762,24 @@ const DownLoad: React.FC = () => {
             tableLayout="fixed"
           />
         </div>
+        <Modal
+          width={400}
+          maskClosable={false}
+          onCancel={modalMoveCancel}
+          onOk={modalMoveOk}
+          visible={modalMoveVisible}
+          destroyOnClose={true}
+        >
+          <div style={{ height: '200px', overflowY: 'auto', overflowX: 'hidden', marginTop: '24px' }}>
+            <Tree
+              showLine={true}
+              showIcon={true}
+              loadData={onLoadTreeData}
+              onSelect={treeDataSelect}
+              treeData={treeData}
+            />
+          </div>
+        </Modal>
         <Modal
           width={300}
           maskClosable={false}
