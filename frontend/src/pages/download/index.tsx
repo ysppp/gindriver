@@ -63,29 +63,8 @@ const DownLoad: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([])
   const [modalVisible, setModalVisible] = useState<boolean>(false)
   const [fileName, setFileName] = useState<string>('')
-  const [treeData, setTreeData] = useState<ITreeData[]>([])
-  const [data, setData] = useState<IData[]>([{
-    ParentFolderId: 1,
-    key: 2,
-    FileId: 3,
-    FileName: '测试',
-    Size: 10,
-    UploadTime: new Date().getTime(),
-    FolderId: 0,
-    FolderName: '',
-    time: new Date().getTime()
-  },
-  {
-    ParentFolderId: 10,
-    key: 20,
-    FileId: 0,
-    FileName: '文件夹1',
-    Size: 10,
-    UploadTime: new Date().getTime(),
-    FolderId: 30,
-    FolderName: '文件夹1',
-    time: new Date().getTime()
-  }])
+  const [treeData, setTreeData] = useState<ITreeData[]>([{title: '全部文件', key: 0, icon: <IconFont type="icon-folder"/>}])
+  const [data, setData] = useState<IData[]>([])
   const [uploadData, setUploadData] = useState<IUploadData>({
     user: 'User',
     uploadPerm: { disabled: false },
@@ -305,10 +284,16 @@ const DownLoad: React.FC = () => {
         FolderId: 0
       }
     }).then(res => {
-      const formalData = res.data.map((item: any) => {
-        item.title = item.sonFoldersName
-        item.key = item.sonFoldersId
+      if (res.data.sonFolders === null) {
+        message.error('当前并无文件夹')
+        return
+      }
+
+      const formalData = res.data.sonFolders.map((item: any) => {
+        item.title = item.SonFoldersName
+        item.key = item.SonFoldersId
         item.icon = <IconFont type="icon-folder" />
+        if (!item.HaveSon) item.switcherIcon = switcherIcon
         return item
       })
       // const formalData = [
@@ -316,7 +301,10 @@ const DownLoad: React.FC = () => {
       //   { title: '文件夹2', key: 2, icon: <IconFont type="icon-folder" /> },
       // ]
       setCurrentMoveRecord(record)
-      setTreeData(formalData)
+      setTreeData(origin => origin.map(item => {
+        item.children = formalData
+        return item
+      }))
       setModalMoveVisible(true)
     }).catch(() => {
 
@@ -328,13 +316,14 @@ const DownLoad: React.FC = () => {
       url: 'api/file/folder/getSon',
       method: 'post',
       data: {
-        FolderId: record.FolderId
+        FolderId: 0
       }
     }).then(res => {
-      const formalData = res.data.map((item: any) => {
-        item.title = item.sonFoldersName
-        item.key = item.sonFoldersId
+      const formalData = res.data.sonFolders.map((item: any) => {
+        item.title = item.SonFoldersName
+        item.key = item.SonFoldersId
         item.icon = <IconFont type="icon-folder" />
+        if (!item.HaveSon) item.switcherIcon = switcherIcon
         return item
       })
       // const formalData = [
@@ -342,7 +331,10 @@ const DownLoad: React.FC = () => {
       //   { title: '文件夹2', key: 2, icon: <IconFont type="icon-folder" /> },
       // ]
       setCurrentMoveRecord(record)
-      setTreeData(formalData)
+      setTreeData(origin => origin.map(item => {
+        item.children = formalData
+        return item
+      }))
       setModalMoveVisible(true)
     }).catch(() => {
 
@@ -577,15 +569,21 @@ const DownLoad: React.FC = () => {
   }
 
   const moveFolder = () => {
+    if (currentToMoveRecordId === currentMoveRecord?.FolderId) {
+      message.error('不能移动到当前目录')
+      return
+    }
     axios({
       url: 'api/file/folder/move',
       method: 'post',
       data: {
-        ToFolderId: currentToMoveRecordId,
-        FolderId: currentMoveRecord?.FolderId
+        toFolderId: currentToMoveRecordId,
+        folderId: currentMoveRecord?.FolderId
       }
     }).then(() => {
-      message.success('移动成功')
+      getFilesData(currentFolderArrId[currentFolderArrId.length - 1], () => {
+        message.success('移动成功')
+      })
       setModalMoveVisible(false)
     })
   }
@@ -595,11 +593,13 @@ const DownLoad: React.FC = () => {
       url: 'api/file/move',
       method: 'post',
       data: {
-        FileId: currentToMoveRecordId,
-        FolderId: currentMoveRecord?.FolderId
+        fId: currentMoveRecord?.FileId,
+        FolderId: currentToMoveRecordId
       }
     }).then(() => {
-      message.success('移动成功')
+      getFilesData(currentFolderArrId[currentFolderArrId.length - 1], () => {
+        message.success('移动成功')
+      })
       setModalMoveVisible(false)
     })
   }
@@ -649,17 +649,18 @@ const DownLoad: React.FC = () => {
           FolderId: key
         }
       }).then((res) => {
-        const formalData = res.data.map((item: any) => {
-          item.title = item.sonFoldersName
-          item.key = item.sonFoldersId
+        const formalData = res.data.sonFolders.map((item: any) => {
+          item.title = item.SonFoldersName
+          item.key = item.SonFoldersId
           item.icon = <IconFont type="icon-folder" />
+          if (!item.HaveSon) item.switcherIcon = switcherIcon
           return item
         })
         setTreeData(origin => updateTreeData(origin, key, formalData))
+        resolve()
       }).catch(() => {
 
       })
-      resolve()
     })
   }
 
@@ -777,6 +778,7 @@ const DownLoad: React.FC = () => {
               loadData={onLoadTreeData}
               onSelect={treeDataSelect}
               treeData={treeData}
+              defaultExpandedKeys={[0]}
             />
           </div>
         </Modal>

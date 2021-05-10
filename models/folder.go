@@ -117,5 +117,5 @@ func UpdateFolderName(fId uint64, fName string) {
 
 func MoveFolder(fromFolderId, toFolderId uint64) {
 	var folder FileFolder
-	utils.Database.Model(&folder).Where("foldId=?", fromFolderId).Update("parentFolderId", toFolderId)
+	utils.Database.Model(&folder).Where("folderId=?", fromFolderId).Update("parentfolderid", toFolderId)
 }

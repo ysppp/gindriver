@@ -214,6 +214,12 @@ func UpdateFileFolder(c *gin.Context) {
 	models.UpdateFolderName(fileFolderId, fileFolderName)
 }
 
+type SonFolder struct {
+	SonFoldersId   uint64
+	SonFoldersName string
+	HaveSon        bool
+}
+
 func GetAllFolders(c *gin.Context) {
 	username, ret := c.Get("SessionUser")
 	if !ret {
@@ -231,23 +237,35 @@ func GetAllFolders(c *gin.Context) {
 	folderId := json.FolderId
 	//var allFolders []structOfFolders
 	//var folder models.FileFolder
-	var sonFolders []struct {
-		sonFoldersId   uint64
-		sonFoldersName string
-	}
-	var sonFolder struct {
-		sonFoldersId   uint64
-		sonFoldersName string
-	}
+	var sonFolders []SonFolder
+	var sonFolder SonFolder
 	folders := models.GetFileFolder(folderId, user.FileStoreId)
+	fmt.Println(folders)
+	if len(folders) == 0 {
+		sonFolder.HaveSon = false
+	} else {
+		sonFolder.HaveSon = true
+	}
+
+	//if folderId == 0 && folders != nil {
+	//	sonFolder.SonFoldersId = 0
+	//	sonFolder.SonFoldersName = "全部文件"
+	//	sonFolders = append(sonFolders, sonFolder)
+	//}
+
 	for _, folder := range folders {
-		sonFolder.sonFoldersId = folder.FolderId
-		sonFolder.sonFoldersName = folder.FolderName
+		sonFolder.SonFoldersId = folder.FolderId
+		sonFolder.SonFoldersName = folder.FolderName
+		if len(models.GetFileFolder(sonFolder.SonFoldersId, user.FileStoreId)) == 0 {
+			sonFolder.HaveSon = false
+		} else {
+			sonFolder.HaveSon = true
+		}
 		sonFolders = append(sonFolders, sonFolder)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"folders": sonFolders,
+		"sonFolders": sonFolders,
 	})
 }
 
@@ -275,10 +293,17 @@ func MoveFolder(c *gin.Context) {
 
 	toFolderId := json.ToFolderId
 	folderId := json.FolderId
+	if folderId == toFolderId {
+		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("移动失败！")))
+		return
+	}
 	folder := models.GetCurrentFolder(folderId)
+
+	fmt.Println(folder)
 	if !models.IsFolderNameOK(toFolderId, folder.FileStoreId, folder.FolderName) {
 		c.JSON(http.StatusBadRequest, utils.ErrorWrapper(fmt.Errorf("目标文件夹存在同名文件夹！")))
 		return
 	}
+	fmt.Printf("foldeId: %d, toFolderId: %d", folderId, toFolderId)
 	models.MoveFolder(folderId, toFolderId)
 }

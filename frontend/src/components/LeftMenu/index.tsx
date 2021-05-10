@@ -108,6 +108,21 @@ class LeftMenu extends React.Component<IProps & RouteComponentProps, IState> {
             {/* <Link to="/shareDocument">分享文件</Link> */}
             <a onClick={() => this.props.changeType(Type.video)}>视频</a>
           </Menu.Item>
+          <Menu.Item key="shareText">
+            <UserOutlined />
+            {/* <Link to="/shareDocument">分享文件</Link> */}
+            <a onClick={() => this.props.changeType(Type.text)}>文本</a>
+          </Menu.Item>
+          <Menu.Item key="shareMusic">
+            <UserOutlined />
+            {/* <Link to="/shareDocument">分享文件</Link> */}
+            <a onClick={() => this.props.changeType(Type.music)}>音乐</a>
+          </Menu.Item>
+          <Menu.Item key="shareOther">
+            <UserOutlined />
+            {/* <Link to="/shareDocument">分享文件</Link> */}
+            <a onClick={() => this.props.changeType(5)}>其他</a>
+          </Menu.Item>
 
           {/* <Menu.Item key="Problem">
             <BugOutlined />
