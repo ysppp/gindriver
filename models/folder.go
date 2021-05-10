@@ -89,7 +89,6 @@ func GetUserFileFolderCount(fileStoreId uint64) (fileFolderCount int64) {
 //删除文件夹信息
 func DeleteFileFolder(folderId uint64) bool {
 	var fileFolder []FileFolder
-	var fileFolder2 FileFolder
 	fmt.Printf("folderId: %d\n", folderId)
 	//删除文件夹信息
 	utils.Database.Where("FolderId=?", folderId).Delete(FileFolder{})
@@ -101,7 +100,7 @@ func DeleteFileFolder(folderId uint64) bool {
 	//utils.Database.Where("ParentFolderId=?", folderId).Delete(FileFolder{})
 
 	for _, folder := range fileFolder {
-		if fileFolder2.FolderId != 0 { //递归删除文件下的文件夹
+		if folder.FolderId != 0 { //递归删除文件下的文件夹
 			return DeleteFileFolder(folder.FolderId)
 		}
 	}
