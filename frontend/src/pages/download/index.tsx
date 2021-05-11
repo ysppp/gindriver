@@ -385,7 +385,7 @@ const DownLoad: React.FC = () => {
       method: 'post',
       data: JSON.stringify({
         fileId: record.FileId,
-        url: 'http://www.bickik.com/share'
+        url: 'https://www.bickik.com/share'
       })
     }).then(res => {
       const data = res.data
@@ -513,7 +513,9 @@ const DownLoad: React.FC = () => {
       setModalVisible(false)
       getFilesData(currentFolderArrId[currentFolderArrId.length - 1])
     }).catch(() => {
-
+      message.error("创建失败！")
+      setModalVisible(false)
+      getFilesData(currentFolderArrId[currentFolderArrId.length - 1])
     })
   }
 
@@ -735,7 +737,7 @@ const DownLoad: React.FC = () => {
               trigger={['hover']}
             >
               <div>
-                <img src="http://cdn.blogleeee.com/wtp4ln2hccunw9g" />
+                {/*<img src="http://cdn.blogleeee.com/wtp4ln2hccunw9g" />*/}
                 <span>{uploadData.user}</span>
               </div>
             </Dropdown>

@@ -3,16 +3,11 @@ package models
 import (
 	"fmt"
 	"gindriver/lib"
-
-	//"crypto/rand"
-	//"encoding/binary"
-	//"fmt"
 	"gindriver/utils"
 	"path"
 	"strconv"
 	"strings"
 	"time"
-	//"time"
 )
 
 type File struct {
